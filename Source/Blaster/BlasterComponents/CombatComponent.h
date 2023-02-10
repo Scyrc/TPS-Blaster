@@ -17,16 +17,26 @@ public:
 	UCombatComponent();
 	friend  class ABlasterCharacter;
 	void EquipWeapon(AWeapon* WeaponToEquip);
+	virtual void GetLifetimeReplicatedProps(TArray<FLifetimeProperty>& OutLifetimeProps) const override;
 
 protected:
 	
 	virtual void BeginPlay() override;
+	void SetAiming(bool bIsAiming);
+
+	UFUNCTION(Server, Reliable)
+	void ServerSetAiming(bool bIsAiming);
 
 public:	
 	
 	virtual void TickComponent(float DeltaTime, ELevelTick TickType, FActorComponentTickFunction* ThisTickFunction) override;
 private:
-	 ABlasterCharacter* Character;
-	 AWeapon* EquippedWeapon;
+	ABlasterCharacter* Character;
+
+	UPROPERTY(Replicated)
+	AWeapon* EquippedWeapon;
+	
+	UPROPERTY(Replicated)
+	bool bAiming;
 		
 };
