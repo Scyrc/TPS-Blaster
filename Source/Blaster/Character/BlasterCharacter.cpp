@@ -96,11 +96,25 @@ void ABlasterCharacter::LookUp(float Value)
 
 void ABlasterCharacter::EquipButtonPress()
 {
-	if(Combat && HasAuthority())
+	if(Combat)   
+	{
+		if(HasAuthority())
+		{
+			Combat->EquipWeapon(OverlappingWeapon);
+		}
+		else
+		{
+			ServerEquipButtonPress();
+		}
+	}
+}
+
+void ABlasterCharacter::ServerEquipButtonPress_Implementation()
+{
+	if(Combat)
 	{
 		Combat->EquipWeapon(OverlappingWeapon);
 	}
-	
 }
 
 void ABlasterCharacter::OnRep_OverlappingWeapon(AWeapon* LastWeapon)
@@ -114,6 +128,8 @@ void ABlasterCharacter::OnRep_OverlappingWeapon(AWeapon* LastWeapon)
 		LastWeapon->ShowPickupWidget(false);
 	}
 }
+
+
 
 void ABlasterCharacter::SetOverlappingWeapon(AWeapon* Weapon)
 {
