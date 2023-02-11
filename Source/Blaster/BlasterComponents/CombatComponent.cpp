@@ -14,7 +14,18 @@ UCombatComponent::UCombatComponent()
 {
 	PrimaryComponentTick.bCanEverTick = false;
 
-	// ...
+	BaseWalkSpeed = 600.f;
+	AimWalkSpeed = 400.f;
+}
+
+
+void UCombatComponent::BeginPlay()
+{
+	Super::BeginPlay();
+	if(Character)
+	{
+		Character->GetCharacterMovement()->MaxWalkSpeed = BaseWalkSpeed;
+	}
 }
 
 void UCombatComponent::EquipWeapon(AWeapon* WeaponToEquip)
@@ -43,20 +54,23 @@ void UCombatComponent::GetLifetimeReplicatedProps(TArray<FLifetimeProperty>& Out
 
 void UCombatComponent::SetAiming(bool bIsAiming)
 {
+	if(!EquippedWeapon) return;
 	bAiming = bIsAiming;
 	ServerSetAiming(bIsAiming);
-}
-
-
-void UCombatComponent::BeginPlay()
-{
-	Super::BeginPlay();
-	
+	if(Character)
+	{
+		Character->GetCharacterMovement()->MaxWalkSpeed = bIsAiming ? AimWalkSpeed : BaseWalkSpeed;
+	}
 }
 
 void UCombatComponent::ServerSetAiming_Implementation(bool bIsAiming)
 {
+	if(!EquippedWeapon) return;
 	bAiming = bIsAiming;
+	if(Character)
+	{
+		Character->GetCharacterMovement()->MaxWalkSpeed = bIsAiming ? AimWalkSpeed : BaseWalkSpeed;
+	}
 }
 
 void UCombatComponent::OnRep_EquippedWeaopn()
