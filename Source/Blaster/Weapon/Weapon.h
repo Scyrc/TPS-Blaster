@@ -28,6 +28,7 @@ public:
 
 	void SetWeaponState(EWeaponState State);
 	virtual void GetLifetimeReplicatedProps(TArray<FLifetimeProperty>& OutLifetimeProps) const override;
+	FORCEINLINE USkeletalMeshComponent* GetWeaponMesh() const {return WeaponMesh;}
 
 protected:
 	virtual void BeginPlay() override;

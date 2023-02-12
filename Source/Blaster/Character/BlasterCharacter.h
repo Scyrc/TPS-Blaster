@@ -3,7 +3,9 @@
 #pragma once
 
 #include "CoreMinimal.h"
+#include "Blaster/BlasterTypes/TurningInPlace.h"
 #include "GameFramework/Character.h"
+
 #include "BlasterCharacter.generated.h"
 
 UCLASS()
@@ -53,14 +55,20 @@ private:
 
 
 	float AO_Yaw;
+	float InterAO_Yaw;
 	float AO_Pitch;
 	FRotator StartingAimRotation;
 
+	ETurningInPlace TurningInPlace;
+	void TurnInPlace(float DeltaTime);
 public:
 	void SetOverlappingWeapon(AWeapon* Weapon);
 	bool IsWeaponEquipped() const;
 	bool IsAiming() const;
 	FORCEINLINE float GetAO_Yaw() const{return AO_Yaw;}
 	FORCEINLINE float GetAO_Pitch() const{return AO_Pitch;}
+	AWeapon* GetEquippedWeapon();
+	FORCEINLINE ETurningInPlace GetTuringInPlace() const {return TurningInPlace;}
+
 
 };
