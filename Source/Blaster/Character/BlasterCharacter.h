@@ -31,6 +31,7 @@ protected:
 	void CrouchButtonPress();
 	void AimButtonPress();
 	void AimOffset(float DeltaTime);
+	virtual void Jump() override;
 
 private:
 	UPROPERTY(VisibleAnywhere, Category="Camera")
