@@ -29,6 +29,7 @@ public:
 	void SetWeaponState(EWeaponState State);
 	virtual void GetLifetimeReplicatedProps(TArray<FLifetimeProperty>& OutLifetimeProps) const override;
 	FORCEINLINE USkeletalMeshComponent* GetWeaponMesh() const {return WeaponMesh;}
+	void Fire();
 
 protected:
 	virtual void BeginPlay() override;
@@ -66,4 +67,7 @@ private:
 
 	UPROPERTY(VisibleAnywhere, Category="Weapon Properies")
 	class UWidgetComponent* PickupWidget;
+	
+	UPROPERTY(EditAnywhere, Category="Weapon Properies")
+	class UAnimationAsset* FireAnimation;
 };

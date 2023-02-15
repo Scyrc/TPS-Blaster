@@ -29,6 +29,13 @@ AWeapon::AWeapon()
 }
 
 
+void AWeapon::Fire()
+{
+	if(FireAnimation)
+	{
+		WeaponMesh->PlayAnimation(FireAnimation, false);
+	}
+}
 
 void AWeapon::BeginPlay()
 {
