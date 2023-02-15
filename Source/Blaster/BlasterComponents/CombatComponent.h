@@ -29,6 +29,8 @@ protected:
 	UFUNCTION()
 	void OnRep_EquippedWeaopn();
 
+	void FireButtonPressed(bool bPressed);
+
 public:	
 	
 	virtual void TickComponent(float DeltaTime, ELevelTick TickType, FActorComponentTickFunction* ThisTickFunction) override;
@@ -45,5 +47,6 @@ private:
 	UPROPERTY(EditAnywhere)
 	float AimWalkSpeed;
 
+	bool bFireButtonPressed;
 		
 };
