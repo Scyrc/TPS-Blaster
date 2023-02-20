@@ -40,12 +40,15 @@ protected:
 
 	void TraceUnderCrosshairs(FHitResult& TraceHitResult);
 
+	void SetHUDCrosshairs(float DeltaTime);
+
 public:	
 	
 	virtual void TickComponent(float DeltaTime, ELevelTick TickType, FActorComponentTickFunction* ThisTickFunction) override;
 private:
 	ABlasterCharacter* Character;
-
+	class ABlasterPlayerController* Controller;
+	class ABlasterHUD* HUD;
 	UPROPERTY(ReplicatedUsing=OnRep_EquippedWeaopn)
 	AWeapon* EquippedWeapon;
 	
@@ -57,5 +60,8 @@ private:
 	float AimWalkSpeed;
 
 	bool bFireButtonPressed;
-		
+
+	float CrosshairVelocityFactor;
+	float CrosshairInAirFactor;
+
 };
