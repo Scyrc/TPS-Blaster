@@ -29,12 +29,14 @@ AWeapon::AWeapon()
 }
 
 
-void AWeapon::Fire()
+void AWeapon::Fire(const FVector& HitTarget)
 {
 	if(FireAnimation)
 	{
 		WeaponMesh->PlayAnimation(FireAnimation, false);
 	}
+
+	
 }
 
 void AWeapon::BeginPlay()
