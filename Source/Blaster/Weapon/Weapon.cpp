@@ -2,10 +2,14 @@
 
 
 #include "Weapon.h"
+
+#include "Casing.h"
 #include "Components/SphereComponent.h"
 #include "Components/WidgetComponent.h"
 #include "Blaster/Character/BlasterCharacter.h"
 #include "Net/UnrealNetwork.h"
+#include "Engine/SkeletalMeshSocket.h"
+
 // Sets default values
 AWeapon::AWeapon()
 {
@@ -34,6 +38,23 @@ void AWeapon::Fire(const FVector& HitTarget)
 	if(FireAnimation)
 	{
 		WeaponMesh->PlayAnimation(FireAnimation, false);
+	}
+
+	if(CasingClass)
+	{
+		if(const USkeletalMeshSocket* AmmoEjectSocket = WeaponMesh->GetSocketByName(FName("AmmoEject")))
+		{
+			const FTransform SocketTransform = AmmoEjectSocket->GetSocketTransform(WeaponMesh);
+			
+			if(UWorld* World = GetWorld())
+			{
+				World->SpawnActor<ACasing>(
+					CasingClass,
+					SocketTransform.GetLocation(),
+					SocketTransform.GetRotation().Rotator() 
+					);
+			}
+		}
 	}
 
 	
