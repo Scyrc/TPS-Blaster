@@ -297,6 +297,13 @@ void ABlasterCharacter::PlayFireMontage(bool bAiming)
 	}
 }
 
+FVector ABlasterCharacter::GetHitTarget() const
+{
+	if(Combat == nullptr) return  FVector();
+
+	return Combat->HitTarget;
+}
+
 void ABlasterCharacter::Tick(float DeltaTime)
 {
 	Super::Tick(DeltaTime);

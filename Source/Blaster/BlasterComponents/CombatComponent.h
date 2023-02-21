@@ -20,6 +20,8 @@ public:
 	friend  class ABlasterCharacter;
 	void EquipWeapon(AWeapon* WeaponToEquip);
 	virtual void GetLifetimeReplicatedProps(TArray<FLifetimeProperty>& OutLifetimeProps) const override;
+	virtual void TickComponent(float DeltaTime, ELevelTick TickType, FActorComponentTickFunction* ThisTickFunction) override;
+
 
 protected:
 	
@@ -42,9 +44,7 @@ protected:
 
 	void SetHUDCrosshairs(float DeltaTime);
 
-public:	
-	
-	virtual void TickComponent(float DeltaTime, ELevelTick TickType, FActorComponentTickFunction* ThisTickFunction) override;
+
 private:
 	ABlasterCharacter* Character;
 	class ABlasterPlayerController* Controller;
@@ -63,5 +63,7 @@ private:
 
 	float CrosshairVelocityFactor;
 	float CrosshairInAirFactor;
+
+	FVector HitTarget;
 
 };
