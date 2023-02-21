@@ -47,8 +47,16 @@ public:
 	class UTexture2D* CrosshairsBottom;
 	
 protected:
+	UPROPERTY(EditAnywhere)
+	float ZoomedFOV = 30.f;
+	
+	UPROPERTY(EditAnywhere)
+	float ZoomInterpSpeed = 20.f;
+	
+protected:
 	virtual void BeginPlay() override;
-
+	
+	
 	UFUNCTION()
 	virtual void OnSphereOverlap(
 		UPrimitiveComponent* OVerlappedComponent,
@@ -88,4 +96,9 @@ private:
 
 	UPROPERTY(EditAnywhere)
 	TSubclassOf<class ACasing> CasingClass;
+
+public:
+	FORCEINLINE float GetZoomedFOV() const{return ZoomedFOV;}
+	FORCEINLINE float GetZoomInterpSpeed() const{return ZoomInterpSpeed;}
+
 };
