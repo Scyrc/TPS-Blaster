@@ -52,8 +52,13 @@ protected:
 	
 	UPROPERTY(EditAnywhere)
 	float ZoomInterpSpeed = 20.f;
+
+	UPROPERTY(EditAnywhere, Category = Fire)
+	float FireDelay = 0.1f;
 	
-protected:
+	UPROPERTY(EditAnywhere, Category = Fire)
+	bool bAutomatic = true;
+	
 	virtual void BeginPlay() override;
 	
 	
@@ -100,5 +105,9 @@ private:
 public:
 	FORCEINLINE float GetZoomedFOV() const{return ZoomedFOV;}
 	FORCEINLINE float GetZoomInterpSpeed() const{return ZoomInterpSpeed;}
+
+	FORCEINLINE float GetFireDelay() const{return FireDelay;}
+	FORCEINLINE bool IsAutomatic() const{return bAutomatic;
+	}
 
 };
