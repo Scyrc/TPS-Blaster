@@ -64,11 +64,6 @@ void AProjectile::OnHit(UPrimitiveComponent* HitComp, AActor* OtherActor, UPrimi
 		UGameplayStatics::PlaySoundAtLocation(this, ImpactSound, GetActorLocation());
 	}
 
-	if(ABlasterCharacter* BlasterCharacter = Cast<ABlasterCharacter>(OtherActor))
-	{
-		BlasterCharacter->MulticastHit();
-	}
-
 	Destroy();
 }
 

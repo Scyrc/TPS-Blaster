@@ -80,13 +80,24 @@ void ABlasterCharacter::OnRep_ReplicatedMovement()
 	TimeSinceLastMovementReplication = 0.f;
 }
 
-void ABlasterCharacter::BeginPlay()
+void ABlasterCharacter::UpdateHUDHealth()
 {
-	Super::BeginPlay();
-	BlasterPlayerController = Cast<ABlasterPlayerController>(Controller);
+	BlasterPlayerController = BlasterPlayerController == nullptr ? Cast<ABlasterPlayerController>(Controller) : BlasterPlayerController;
 	if(BlasterPlayerController)
 	{
 		BlasterPlayerController->SetHUDHealth(CurrentHealth, MaxHealth);
+	}
+}
+
+void ABlasterCharacter::BeginPlay()
+{
+	Super::BeginPlay();
+	
+	UpdateHUDHealth();
+
+	if(HasAuthority())
+	{
+		OnTakeAnyDamage.AddDynamic(this, &ABlasterCharacter::ReceiveDamage);
 	}
 }
 
@@ -350,7 +361,15 @@ void ABlasterCharacter::OnRep_OverlappingWeapon(AWeapon* LastWeapon)
 
 void ABlasterCharacter::OnRep_Health()
 {
-	
+	UpdateHUDHealth();
+	PlayHitReactMontage();
+}
+
+void ABlasterCharacter::ReceiveDamage(AActor* DamagedActor, float Damage, const UDamageType* DamageType,AController* InstigatedBy, AActor* DamageCauser)
+{
+	CurrentHealth = FMath::Clamp(CurrentHealth - Damage, 0.f, MaxHealth);
+	UpdateHUDHealth();
+	PlayHitReactMontage();
 }
 
 void ABlasterCharacter::SetOverlappingWeapon(AWeapon* Weapon)
@@ -414,11 +433,6 @@ FVector ABlasterCharacter::GetHitTarget() const
 	if(Combat == nullptr) return  FVector();
 
 	return Combat->HitTarget;
-}
-
-void ABlasterCharacter::MulticastHit_Implementation()
-{
-	PlayHitReactMontage();
 }
 
 

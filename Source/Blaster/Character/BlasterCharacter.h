@@ -39,7 +39,12 @@ protected:
 	void FireButtonPressed();
 	void FireButtonReleased();
 	void PlayHitReactMontage();
-	
+
+	UFUNCTION()
+	void ReceiveDamage(AActor* DamagedActor, float Damage, const  UDamageType* DamageType,  AController* InstigatedBy, AActor* DamageCauser);
+
+	void UpdateHUDHealth();
+
 	
 private:
 	UPROPERTY(VisibleAnywhere, Category="Camera")
@@ -89,8 +94,10 @@ private:
 	FRotator ProxyRotationCurrentFrame;
 	float TimeSinceLastMovementReplication;
 	float CalculateSpeed() const;
+	
 	UPROPERTY(EditAnywhere, Category = playerState)
 	float MaxHealth = 100.f;
+	
 	UPROPERTY(ReplicatedUsing = OnRep_Health, VisibleAnywhere, Category = playerState)
 	float CurrentHealth = 100.f;
 	
@@ -98,7 +105,7 @@ private:
 	void OnRep_Health();
 
 	class ABlasterPlayerController* BlasterPlayerController;
-	
+
 
 public:
 	void SetOverlappingWeapon(AWeapon* Weapon);
@@ -111,9 +118,6 @@ public:
 	void PlayFireMontage(bool bAiming);
 	FVector GetHitTarget() const;
 	FORCEINLINE UCameraComponent* GetFollowCamera() const {return FollowCamera;}
-	
-	UFUNCTION(NetMulticast, Unreliable)
-	void MulticastHit();
 
 	FORCEINLINE bool ShouldRotateRootBone() const{ return  bRotateRootBone;}
 };
