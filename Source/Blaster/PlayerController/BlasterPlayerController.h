@@ -13,5 +13,9 @@ UCLASS()
 class BLASTER_API ABlasterPlayerController : public APlayerController
 {
 	GENERATED_BODY()
-	
+public:
+	virtual void BeginPlay() override;
+	void SetHUDHealth(float Health, float MaxHealth);
+private:
+	class ABlasterHUD* BlasterHUD;
 };

@@ -89,6 +89,16 @@ private:
 	FRotator ProxyRotationCurrentFrame;
 	float TimeSinceLastMovementReplication;
 	float CalculateSpeed() const;
+	UPROPERTY(EditAnywhere, Category = playerState)
+	float MaxHealth = 100.f;
+	UPROPERTY(ReplicatedUsing = OnRep_Health, VisibleAnywhere, Category = playerState)
+	float CurrentHealth = 100.f;
+	
+	UFUNCTION()
+	void OnRep_Health();
+
+	class ABlasterPlayerController* BlasterPlayerController;
+	
 
 public:
 	void SetOverlappingWeapon(AWeapon* Weapon);
