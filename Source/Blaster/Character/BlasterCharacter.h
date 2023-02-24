@@ -7,6 +7,7 @@
 #include "Blaster/Interfaces/InteractWithCrosshairsInterface.h"
 #include "Components/TimelineComponent.h"
 #include "GameFramework/Character.h"
+#include "Sound/SoundCue.h"
 
 #include "BlasterCharacter.generated.h"
 
@@ -23,6 +24,7 @@ public:
 	virtual void GetLifetimeReplicatedProps(TArray<FLifetimeProperty>& OutLifetimeProps) const override;
 	virtual void PostInitializeComponents() override;
 	virtual void OnRep_ReplicatedMovement() override;
+	virtual void Destroyed() override;
 protected:
 
 	virtual void BeginPlay() override;
@@ -138,7 +140,18 @@ private:
 
 	UPROPERTY(EditAnywhere, Category="Elim")	
 	UMaterialInstance* DissolveMaterialInstance;
+
+	/*
+	 * Elim Bot
+	 */
+	UPROPERTY(EditAnywhere)
+	UParticleSystem* ElimBotEffect;
 	
+	UPROPERTY(VisibleAnywhere)
+	UParticleSystemComponent* ElimBotComponent;
+
+	UPROPERTY(EditAnywhere)
+	USoundCue* ElimBotSound;
 
 
 public:
@@ -161,6 +174,10 @@ public:
 
 	FORCEINLINE bool IsElimmed() const{ return  bElimmed;}
 	void Elim();
+
+	FORCEINLINE float GetHealth()const{return  CurrentHealth;}
+	FORCEINLINE float GetMaxHealth()const{return  MaxHealth;}
+
 
 	
 

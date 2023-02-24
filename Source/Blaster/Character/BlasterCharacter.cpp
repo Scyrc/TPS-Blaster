@@ -14,7 +14,9 @@
 #include "Net/UnrealNetwork.h"
 #include "Blaster/Weapon/Weapon.h"
 #include "Components/CapsuleComponent.h"
+#include "Kismet/GameplayStatics.h"
 #include "Kismet/KismetMathLibrary.h"
+#include "Particles/ParticleSystemComponent.h"
 
 // Sets default values
 ABlasterCharacter::ABlasterCharacter()
@@ -81,6 +83,16 @@ void ABlasterCharacter::OnRep_ReplicatedMovement()
 	Super::OnRep_ReplicatedMovement();
 	SimproxiesTurn();
 	TimeSinceLastMovementReplication = 0.f;
+}
+
+void ABlasterCharacter::Destroyed()
+{
+	Super::Destroyed();
+
+	if(ElimBotComponent)
+	{
+		ElimBotComponent->DestroyComponent();
+	}
 }
 
 void ABlasterCharacter::UpdateHUDHealth()
@@ -516,6 +528,27 @@ void ABlasterCharacter::MulticastElim_Implementation()
 
 	GetCapsuleComponent()->SetCollisionEnabled(ECollisionEnabled::NoCollision);
 	GetMesh()->SetCollisionEnabled(ECollisionEnabled::NoCollision);
+
+	// spawn Elin effect
+
+	if(ElimBotEffect)
+	{
+		FVector ElimBotSpawnPoint(GetActorLocation().X, GetActorLocation().Y, GetActorLocation().Z + 200.f);
+		ElimBotComponent = UGameplayStatics::SpawnEmitterAtLocation(
+			GetWorld(),
+			ElimBotEffect,
+			ElimBotSpawnPoint,
+			GetActorRotation()
+			);
+	}
+	if(ElimBotSound)
+	{
+		UGameplayStatics::SpawnSoundAtLocation(
+			GetWorld(),
+			ElimBotSound,
+			GetActorLocation()
+			);
+	}
 }
 
 void ABlasterCharacter::ElimTimerFinished()
@@ -524,6 +557,10 @@ void ABlasterCharacter::ElimTimerFinished()
 	if(BlasterGameMode)
 	{
 		BlasterGameMode->RequestRespawn(this, Controller);
+	}
+	if(ElimBotComponent)
+	{
+		ElimBotComponent->DestroyComponent();
 	}
 }
 
@@ -552,6 +589,5 @@ void ABlasterCharacter::SetupPlayerInputComponent(UInputComponent* PlayerInputCo
 	
 	PlayerInputComponent->BindAction("Fire", IE_Pressed, this, &ABlasterCharacter::FireButtonPressed);
 	PlayerInputComponent->BindAction("Fire", IE_Released, this, &ABlasterCharacter::FireButtonReleased);
-
-
+	
 }
