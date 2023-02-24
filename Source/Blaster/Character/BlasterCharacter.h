@@ -5,6 +5,7 @@
 #include "CoreMinimal.h"
 #include "Blaster/BlasterTypes/TurningInPlace.h"
 #include "Blaster/Interfaces/InteractWithCrosshairsInterface.h"
+#include "Components/TimelineComponent.h"
 #include "GameFramework/Character.h"
 
 #include "BlasterCharacter.generated.h"
@@ -111,6 +112,33 @@ private:
 
 	bool bElimmed = false;
 
+	FTimerHandle ElimTimer;
+
+	void ElimTimerFinished();
+
+	UPROPERTY(EditDefaultsOnly)
+	float ElimDelay = 3.f;
+
+	/*
+	 * Dissolve Effect
+	 */
+	UPROPERTY(VisibleAnywhere)
+	UTimelineComponent* DissolveTimeline;
+	FOnTimelineFloat DissolveTrack;
+	UPROPERTY(EditAnywhere)
+	UCurveFloat* DissloveCurve;
+
+	UFUNCTION()
+	void UpdateDissolveMaterial(float DissolveValue);
+
+	void StartDissolve();
+
+	UPROPERTY(VisibleAnywhere, Category="Elim")
+	UMaterialInstanceDynamic* DynamicDissolveMaterialInstance;
+
+	UPROPERTY(EditAnywhere, Category="Elim")	
+	UMaterialInstance* DissolveMaterialInstance;
+	
 
 
 public:
@@ -134,12 +162,7 @@ public:
 	FORCEINLINE bool IsElimmed() const{ return  bElimmed;}
 	void Elim();
 
-	FTimerHandle ElimTimer;
-
-	void ElimTimerFinished();
-
-	UPROPERTY(EditDefaultsOnly)
-	float ElimDelay = 3.f;
+	
 
 
 
