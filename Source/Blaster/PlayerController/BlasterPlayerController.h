@@ -16,7 +16,10 @@ class BLASTER_API ABlasterPlayerController : public APlayerController
 public:
 	virtual void BeginPlay() override;
 	void SetHUDHealth(float Health, float MaxHealth);
+	void SetHUDScore(float Score);
+	void SetHUDDefeats(int32 Defeats);
 	virtual void OnPossess(APawn* InPawn) override;
 private:
+	UPROPERTY()
 	class ABlasterHUD* BlasterHUD;
 };

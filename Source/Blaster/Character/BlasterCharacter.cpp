@@ -7,6 +7,7 @@
 #include "Blaster/BlasterComponents/CombatComponent.h"
 #include "Blaster/GameMode/BlasterGameMode.h"
 #include "Blaster/PlayerController/BlasterPlayerController.h"
+#include "Blaster/PlayerState/BlasterPlayerState.h"
 #include "GameFramework/SpringArmComponent.h"
 #include "Camera/CameraComponent.h"
 #include "GameFramework/CharacterMovementComponent.h"
@@ -104,6 +105,7 @@ void ABlasterCharacter::UpdateHUDHealth()
 	}
 }
 
+
 void ABlasterCharacter::BeginPlay()
 {
 	Super::BeginPlay();
@@ -133,8 +135,21 @@ void ABlasterCharacter::Tick(float DeltaTime)
 		CalculateAO_Pitch();
 	}
 	HideCameraIfCharacterClose();
+	PollInit();
 }
 
+void ABlasterCharacter::PollInit()
+{
+	if(BlasterPlayerState == nullptr)
+	{
+		BlasterPlayerState = Cast<ABlasterPlayerState>(GetPlayerState());
+		if(BlasterPlayerState)
+		{
+			BlasterPlayerState->AddToScore(0.f);
+			BlasterPlayerState->AddToDefeats(0);
+		}
+	}
+}
 void ABlasterCharacter::HideCameraIfCharacterClose()
 {
 	if(!IsLocallyControlled()) return;
@@ -410,9 +425,9 @@ void ABlasterCharacter::UpdateDissolveMaterial(float DissolveValue)
 void ABlasterCharacter::StartDissolve()
 {
 	DissolveTrack.BindDynamic(this, &ABlasterCharacter::UpdateDissolveMaterial);
-	if(DissloveCurve && DissolveTimeline)
+	if(DissolveCurve && DissolveTimeline)
 	{
-		DissolveTimeline->AddInterpFloat(DissloveCurve, DissolveTrack);
+		DissolveTimeline->AddInterpFloat(DissolveCurve, DissolveTrack);
 		DissolveTimeline->Play();
 	}
 }

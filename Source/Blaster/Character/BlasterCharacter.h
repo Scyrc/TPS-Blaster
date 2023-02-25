@@ -48,6 +48,8 @@ protected:
 
 	void UpdateHUDHealth();
 
+	void PollInit();
+
 	
 private:
 	UPROPERTY(VisibleAnywhere, Category="Camera")
@@ -64,6 +66,7 @@ private:
 
 	UFUNCTION()
 	void OnRep_OverlappingWeapon(AWeapon* LastWeapon);
+	
 	UPROPERTY(VisibleAnywhere)
 	class UCombatComponent* Combat;
 	
@@ -80,13 +83,13 @@ private:
 	void TurnInPlace(float DeltaTime);
 
 	UPROPERTY(EditAnywhere, Category="Combat")
-	class UAnimMontage* FireWeaponMontage;
+	UAnimMontage* FireWeaponMontage;
 
 	UPROPERTY(EditAnywhere, Category="Combat")
-	class UAnimMontage* HitReactMontage;
+	UAnimMontage* HitReactMontage;
 
 	UPROPERTY(EditAnywhere, Category="Combat")
-	class UAnimMontage* ElimMontage;
+	UAnimMontage* ElimMontage;
 
 	void HideCameraIfCharacterClose();
 	
@@ -109,7 +112,8 @@ private:
 	
 	UFUNCTION()
 	void OnRep_Health();
-
+	
+	UPROPERTY()
 	class ABlasterPlayerController* BlasterPlayerController;
 
 	bool bElimmed = false;
@@ -128,7 +132,7 @@ private:
 	UTimelineComponent* DissolveTimeline;
 	FOnTimelineFloat DissolveTrack;
 	UPROPERTY(EditAnywhere)
-	UCurveFloat* DissloveCurve;
+	UCurveFloat* DissolveCurve;
 
 	UFUNCTION()
 	void UpdateDissolveMaterial(float DissolveValue);
@@ -153,7 +157,8 @@ private:
 	UPROPERTY(EditAnywhere)
 	USoundCue* ElimBotSound;
 
-
+	UPROPERTY()
+	class ABlasterPlayerState* BlasterPlayerState;
 public:
 	void SetOverlappingWeapon(AWeapon* Weapon);
 	bool IsWeaponEquipped() const;
@@ -178,9 +183,5 @@ public:
 	FORCEINLINE float GetHealth()const{return  CurrentHealth;}
 	FORCEINLINE float GetMaxHealth()const{return  MaxHealth;}
 
-
 	
-
-
-
 };

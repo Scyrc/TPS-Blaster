@@ -28,13 +28,13 @@ private:
 	UPROPERTY(EditAnywhere)
 	class UBoxComponent* CollisionBox;
 
-	UPROPERTY(VisibleAnywhere)
+	UPROPERTY()
 	class UProjectileMovementComponent* ProjectileMovementComponent;
 
 	UPROPERTY(EditAnywhere)	
 	class UParticleSystem* Tracer;
 	
-	UPROPERTY(EditAnywhere)	
+	UPROPERTY()	
 	class UParticleSystemComponent* TracerComp;
 
 	UPROPERTY(EditAnywhere)

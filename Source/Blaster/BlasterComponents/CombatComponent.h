@@ -48,8 +48,12 @@ protected:
 
 
 private:
+	UPROPERTY()
 	ABlasterCharacter* Character;
+	UPROPERTY()
+
 	class ABlasterPlayerController* Controller;
+	UPROPERTY()
 	class ABlasterHUD* HUD;
 	UPROPERTY(ReplicatedUsing=OnRep_EquippedWeaopn)
 	AWeapon* EquippedWeapon;
