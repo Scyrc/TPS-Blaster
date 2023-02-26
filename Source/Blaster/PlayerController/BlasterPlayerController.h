@@ -18,6 +18,8 @@ public:
 	void SetHUDHealth(float Health, float MaxHealth);
 	void SetHUDScore(float Score);
 	void SetHUDDefeats(int32 Defeats);
+	void SetHUDWeaponAmmo(int32 Ammo);
+	void IsShowHUDWeaponAmmo(bool bShow);
 	virtual void OnPossess(APawn* InPawn) override;
 private:
 	UPROPERTY()

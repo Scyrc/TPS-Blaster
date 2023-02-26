@@ -44,7 +44,6 @@ void ABlasterPlayerController::SetHUDHealth(float Health, float MaxHealth)
 		const FString HealthText = FString::Printf(TEXT("%d/%d"), FMath::CeilToInt(Health), FMath::CeilToInt(MaxHealth));
 		BlasterHUD->CharacterOverlay->HealthText->SetText(FText::FromString(HealthText));
 	}
-				
 }
 
 void ABlasterPlayerController::SetHUDScore(float Score)
@@ -71,5 +70,41 @@ void ABlasterPlayerController::SetHUDDefeats(int32 Defeats)
 	{
 		const FString DefeatsText = FString::Printf(TEXT("%d"), Defeats);
 		BlasterHUD->CharacterOverlay->DefeatsAmount->SetText(FText::FromString(DefeatsText));
+	}
+}
+
+void ABlasterPlayerController::SetHUDWeaponAmmo(int32 Ammo)
+{
+	bool bHUDValid = BlasterHUD &&
+	BlasterHUD->CharacterOverlay&&
+	BlasterHUD->CharacterOverlay->WeaponAmmoAmount;
+
+	if(bHUDValid)
+	{
+		const FString AmmoText = FString::Printf(TEXT("%d"), Ammo);
+		BlasterHUD->CharacterOverlay->WeaponAmmoAmount->SetText(FText::FromString(AmmoText));
+	}
+}
+
+void ABlasterPlayerController::IsShowHUDWeaponAmmo(bool bShow)
+{
+	bool bHUDValid = BlasterHUD &&
+	BlasterHUD->CharacterOverlay&&
+	BlasterHUD->CharacterOverlay->WeaponAmmoAmount&&
+	BlasterHUD->CharacterOverlay->AmmoText;
+
+	if(bHUDValid)
+	{
+		if(bShow)
+		{
+			BlasterHUD->CharacterOverlay->WeaponAmmoAmount->SetVisibility(ESlateVisibility::Visible);
+			BlasterHUD->CharacterOverlay->AmmoText->SetVisibility(ESlateVisibility::Visible);
+
+		}
+		else
+		{
+			BlasterHUD->CharacterOverlay->WeaponAmmoAmount->SetVisibility(ESlateVisibility::Hidden);
+			BlasterHUD->CharacterOverlay->AmmoText->SetVisibility(ESlateVisibility::Hidden);
+		}
 	}
 }

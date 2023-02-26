@@ -7,6 +7,7 @@
 #include "Components/SphereComponent.h"
 #include "Components/WidgetComponent.h"
 #include "Blaster/Character/BlasterCharacter.h"
+#include "Blaster/PlayerController/BlasterPlayerController.h"
 #include "Net/UnrealNetwork.h"
 #include "Engine/SkeletalMeshSocket.h"
 
@@ -32,7 +33,7 @@ AWeapon::AWeapon()
 	PickupWidget->SetupAttachment(RootComponent);
 }
 
-
+// run on server
 void AWeapon::Fire(const FVector& HitTarget)
 {
 	if(FireAnimation)
@@ -57,15 +58,37 @@ void AWeapon::Fire(const FVector& HitTarget)
 		}
 	}
 
+	SpendRound();
+
 	
 }
 
+void AWeapon::IsShowHUDAmmo(bool bShow)
+{
+	OwnerCharacter =  Cast<ABlasterCharacter>(GetOwner());
+	if(OwnerCharacter)
+	{
+		OwnerController =  Cast<ABlasterPlayerController>(OwnerCharacter->Controller) ;
+		if(OwnerController)
+		{
+			OwnerController->IsShowHUDWeaponAmmo(bShow);
+		}
+	}
+}
+
+// run on server
 void AWeapon::Dropped()
 {
 	SetWeaponState(EWeaponState::EWS_Dropped);
 	const FDetachmentTransformRules DetachmentTransformRules(EDetachmentRule::KeepWorld, true);
 	WeaponMesh->DetachFromComponent(DetachmentTransformRules);
+
+	IsShowHUDAmmo(false);
+	Multcast_Dropped();
+	
 	SetOwner(nullptr);
+	OwnerCharacter = nullptr;
+	OwnerController = nullptr;
 }
 
 void AWeapon::BeginPlay()
@@ -84,6 +107,11 @@ void AWeapon::BeginPlay()
 		AreaSphere->OnComponentBeginOverlap.AddDynamic(this, &AWeapon::OnSphereOverlap);
 		AreaSphere->OnComponentEndOverlap.AddDynamic(this, &AWeapon::OnSphereEndOverlap);
 	}
+}
+
+void AWeapon::Multcast_Dropped_Implementation()
+{
+	IsShowHUDAmmo(false);
 }
 
 
@@ -112,16 +140,45 @@ void AWeapon::OnRep_WeaponState()
 	case EWeaponState::EWS_Equipped:
 		ShowPickupWidget(false);
 		//AreaSphere->SetCollisionEnabled(ECollisionEnabled::NoCollision);
-		WeaponMesh->SetCollisionEnabled(ECollisionEnabled::NoCollision);
 		WeaponMesh->SetSimulatePhysics(false);
 		WeaponMesh->SetEnableGravity(false);
+		WeaponMesh->SetCollisionEnabled(ECollisionEnabled::NoCollision);
+
 		break;
 	case EWeaponState::EWS_Dropped:
+		WeaponMesh->SetCollisionEnabled(ECollisionEnabled::QueryAndPhysics);
 		WeaponMesh->SetSimulatePhysics(true);
 		WeaponMesh->SetEnableGravity(true);
-		WeaponMesh->SetCollisionEnabled(ECollisionEnabled::QueryAndPhysics);
 		break; 
 	}
+}
+
+
+// run on server
+void AWeapon::SpendRound()
+{
+	if(Ammo > 0)
+	{
+		Ammo -= 1;
+	}
+
+	SetHUDAmmo();
+	
+}
+
+// run on all client
+void AWeapon::OnRep_Ammo()
+{
+		OwnerCharacter = Cast<ABlasterCharacter>(GetOwner()) ;
+		if(OwnerCharacter)
+		{
+			OwnerController =  Cast<ABlasterPlayerController>(OwnerCharacter->Controller);
+			if(OwnerController)
+			{
+				OwnerController->SetHUDWeaponAmmo(Ammo);
+			}
+		}
+	
 }
 
 void AWeapon::Tick(float DeltaTime)
@@ -134,6 +191,38 @@ void AWeapon::GetLifetimeReplicatedProps(TArray<FLifetimeProperty>& OutLifetimeP
 {
 	Super::GetLifetimeReplicatedProps(OutLifetimeProps);
 	DOREPLIFETIME(AWeapon, WeaponState);
+	DOREPLIFETIME(AWeapon, Ammo);
+}
+
+void AWeapon::SetHUDAmmo()
+{
+	OwnerCharacter = OwnerCharacter==nullptr?  Cast<ABlasterCharacter>(GetOwner()) : OwnerCharacter;
+	if(OwnerCharacter)
+	{
+		OwnerController = OwnerController == nullptr ?  Cast<ABlasterPlayerController>(OwnerCharacter->Controller) : OwnerController ;
+		if(OwnerController)
+		{
+			OwnerController->SetHUDWeaponAmmo(Ammo);
+		}
+	}
+}
+
+// run on client
+void AWeapon::OnRep_Owner()
+{
+	Super::OnRep_Owner();
+
+	if(GetOwner() == nullptr)
+	{
+		OwnerCharacter = nullptr;
+		OwnerController = nullptr;
+	}
+	else
+	{
+		IsShowHUDAmmo(true);
+		SetHUDAmmo();
+	}
+	
 }
 
 void AWeapon::ShowPickupWidget(bool bShowWidget)
@@ -150,22 +239,23 @@ void AWeapon::SetWeaponState(EWeaponState State)
 	switch (WeaponState)
 	{
 	case EWeaponState::EWS_Equipped:
+		if(HasAuthority())
+		{
+			AreaSphere->SetCollisionEnabled(ECollisionEnabled::NoCollision);
+		}
 		ShowPickupWidget(false);
-		AreaSphere->SetCollisionEnabled(ECollisionEnabled::NoCollision);
 		WeaponMesh->SetSimulatePhysics(false);
 		WeaponMesh->SetEnableGravity(false);
 		WeaponMesh->SetCollisionEnabled(ECollisionEnabled::NoCollision);
-
 		break;
 	case EWeaponState::EWS_Dropped:
 		if(HasAuthority())
 		{
 			AreaSphere->SetCollisionEnabled(ECollisionEnabled::QueryOnly);
 		}
+		WeaponMesh->SetCollisionEnabled(ECollisionEnabled::QueryAndPhysics);
 		WeaponMesh->SetSimulatePhysics(true);
 		WeaponMesh->SetEnableGravity(true);
-		WeaponMesh->SetCollisionEnabled(ECollisionEnabled::QueryAndPhysics);
-
 		break; 
 	}
 }

@@ -28,6 +28,8 @@ public:
 
 	void SetWeaponState(EWeaponState State);
 	virtual void GetLifetimeReplicatedProps(TArray<FLifetimeProperty>& OutLifetimeProps) const override;
+	
+	virtual void OnRep_Owner() override;
 	FORCEINLINE USkeletalMeshComponent* GetWeaponMesh() const {return WeaponMesh;}
 	virtual void Fire(const FVector& HitTarget);
 	void Dropped();
@@ -45,7 +47,8 @@ public:
 	
 	UPROPERTY(EditAnywhere, Category = Crosshairs)
 	class UTexture2D* CrosshairsBottom;
-	
+	void SetHUDAmmo();
+	void IsShowHUDAmmo(bool bShow);
 protected:
 	UPROPERTY(EditAnywhere)
 	float ZoomedFOV = 30.f;
@@ -61,7 +64,9 @@ protected:
 	
 	virtual void BeginPlay() override;
 	
-	
+	UFUNCTION(NetMulticast, Reliable)
+	void Multcast_Dropped();
+
 	UFUNCTION()
 	virtual void OnSphereOverlap(
 		UPrimitiveComponent* OVerlappedComponent,
@@ -101,6 +106,19 @@ private:
 
 	UPROPERTY(EditAnywhere)
 	TSubclassOf<class ACasing> CasingClass;
+
+	UPROPERTY(EditDefaultsOnly, ReplicatedUsing=OnRep_Ammo)
+	int32 Ammo;
+	UFUNCTION()
+	void OnRep_Ammo();
+
+	void SpendRound();
+	UPROPERTY(EditDefaultsOnly)
+	int32 MagCapacity;
+	UPROPERTY()
+	class ABlasterCharacter* OwnerCharacter;
+	UPROPERTY()
+	class ABlasterPlayerController* OwnerController;
 
 public:
 	FORCEINLINE float GetZoomedFOV() const{return ZoomedFOV;}
