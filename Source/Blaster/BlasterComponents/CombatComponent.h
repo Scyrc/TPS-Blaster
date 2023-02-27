@@ -4,6 +4,7 @@
 
 #include "CoreMinimal.h"
 #include "Blaster/HUD/BlasterHUD.h"
+#include "Blaster/Weapon/WeaponTypes.h"
 #include "Components/ActorComponent.h"
 #include "CombatComponent.generated.h"
 
@@ -96,4 +97,18 @@ private:
 	bool bCanFire = true;
 	void StartFireTimer();
 	void FireTimerFinished();
+
+	bool CanFire() const;
+
+	//Carried Ammo for the currently-equipped weapon
+	UPROPERTY(ReplicatedUsing=OnRep_CarriedAmmo)
+	int32 CarriedAmmo;
+
+	UFUNCTION()
+	void OnRep_CarriedAmmo();
+
+	UPROPERTY(EditAnywhere)
+	int32 StartingARAmmo= 30;
+	void InitializeCarriedAmmo();
+	TMap<EWeaponType, int32> CarriedAmmoMap;
 };

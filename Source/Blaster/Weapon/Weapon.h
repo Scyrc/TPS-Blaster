@@ -3,6 +3,7 @@
 #pragma once
 
 #include "CoreMinimal.h"
+#include "WeaponTypes.h"
 #include "GameFramework/Actor.h"
 #include "Weapon.generated.h"
 
@@ -120,12 +121,16 @@ private:
 	UPROPERTY()
 	class ABlasterPlayerController* OwnerController;
 
+	UPROPERTY(EditAnywhere)
+	EWeaponType WeaponType;
 public:
 	FORCEINLINE float GetZoomedFOV() const{return ZoomedFOV;}
 	FORCEINLINE float GetZoomInterpSpeed() const{return ZoomInterpSpeed;}
 
 	FORCEINLINE float GetFireDelay() const{return FireDelay;}
-	FORCEINLINE bool IsAutomatic() const{return bAutomatic;
-	}
+	FORCEINLINE bool IsAutomatic() const{return bAutomatic;}
 
+	bool IsEmpty() const;
+
+	FORCEINLINE EWeaponType GetWeaponType () const {return WeaponType;} 
 };

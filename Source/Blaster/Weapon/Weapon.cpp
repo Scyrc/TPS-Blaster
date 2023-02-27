@@ -157,13 +157,15 @@ void AWeapon::OnRep_WeaponState()
 // run on server
 void AWeapon::SpendRound()
 {
-	if(Ammo > 0)
-	{
-		Ammo -= 1;
-	}
+	Ammo= FMath::Clamp(Ammo - 1, 0, MagCapacity);
 
 	SetHUDAmmo();
 	
+}
+
+bool AWeapon::IsEmpty() const
+{
+	return Ammo <= 0;
 }
 
 // run on all client

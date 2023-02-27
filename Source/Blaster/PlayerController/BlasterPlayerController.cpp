@@ -86,25 +86,43 @@ void ABlasterPlayerController::SetHUDWeaponAmmo(int32 Ammo)
 	}
 }
 
+void ABlasterPlayerController::SetHUDCarriedAmmo(int32 Ammo)
+{
+	bool bHUDValid = BlasterHUD &&
+	BlasterHUD->CharacterOverlay&&
+	BlasterHUD->CharacterOverlay->CarriedAmmoAmount;
+
+	if(bHUDValid)
+	{
+		const FString AmmoText = FString::Printf(TEXT("%d"), Ammo);
+		BlasterHUD->CharacterOverlay->CarriedAmmoAmount->SetText(FText::FromString(AmmoText));
+	}
+}
+
 void ABlasterPlayerController::IsShowHUDWeaponAmmo(bool bShow)
 {
 	bool bHUDValid = BlasterHUD &&
 	BlasterHUD->CharacterOverlay&&
 	BlasterHUD->CharacterOverlay->WeaponAmmoAmount&&
-	BlasterHUD->CharacterOverlay->AmmoText;
+	BlasterHUD->CharacterOverlay->CarriedAmmoAmount&&
+	BlasterHUD->CharacterOverlay->AmmoText&&
+	BlasterHUD->CharacterOverlay->SlashText;
 
 	if(bHUDValid)
 	{
 		if(bShow)
 		{
 			BlasterHUD->CharacterOverlay->WeaponAmmoAmount->SetVisibility(ESlateVisibility::Visible);
+			BlasterHUD->CharacterOverlay->CarriedAmmoAmount->SetVisibility(ESlateVisibility::Visible);
 			BlasterHUD->CharacterOverlay->AmmoText->SetVisibility(ESlateVisibility::Visible);
-
+			BlasterHUD->CharacterOverlay->SlashText->SetVisibility(ESlateVisibility::Visible);
 		}
 		else
 		{
 			BlasterHUD->CharacterOverlay->WeaponAmmoAmount->SetVisibility(ESlateVisibility::Hidden);
+			BlasterHUD->CharacterOverlay->CarriedAmmoAmount->SetVisibility(ESlateVisibility::Hidden);
 			BlasterHUD->CharacterOverlay->AmmoText->SetVisibility(ESlateVisibility::Hidden);
+			BlasterHUD->CharacterOverlay->SlashText->SetVisibility(ESlateVisibility::Hidden);
 		}
 	}
 }

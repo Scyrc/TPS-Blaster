@@ -26,6 +26,7 @@ void UCombatComponent::GetLifetimeReplicatedProps(TArray<FLifetimeProperty>& Out
 	Super::GetLifetimeReplicatedProps(OutLifetimeProps);
 	DOREPLIFETIME(UCombatComponent, EquippedWeapon);
 	DOREPLIFETIME(UCombatComponent, bAiming);
+	DOREPLIFETIME_CONDITION(UCombatComponent, CarriedAmmo, COND_OwnerOnly);
 }
 
 void UCombatComponent::BeginPlay()
@@ -39,6 +40,10 @@ void UCombatComponent::BeginPlay()
 			DefaultFOV = FollowCamera->FieldOfView;
 			CurrentFOV = DefaultFOV;
 		}
+	}
+	if(Character->HasAuthority())
+	{
+		InitializeCarriedAmmo();
 	}
 }
 
@@ -76,6 +81,16 @@ void UCombatComponent::EquipWeapon(AWeapon* WeaponToEquip)
 	EquippedWeapon->SetOwner(Character);
 	EquippedWeapon->IsShowHUDAmmo(true);
 	EquippedWeapon->SetHUDAmmo();
+	
+	if(CarriedAmmoMap.Contains(EquippedWeapon->GetWeaponType()))
+	{
+		CarriedAmmo = CarriedAmmoMap[EquippedWeapon->GetWeaponType()];
+	}
+	Controller = Controller == nullptr ? Cast<ABlasterPlayerController>(Character->Controller) : Controller;
+	if(Controller)
+	{
+		Controller->SetHUDCarriedAmmo(CarriedAmmo);
+	}
 	Character->GetCharacterMovement()->bOrientRotationToMovement = false;
 	Character->bUseControllerRotationYaw = true;
 }
@@ -98,7 +113,7 @@ void UCombatComponent::OnRep_EquippedWeaopn()
 
 void UCombatComponent::Fire()
 {
-	if(bCanFire)
+	if(CanFire())
 	{
 		bCanFire = false;
 		ServerFire(HitTarget);
@@ -133,6 +148,27 @@ void UCombatComponent::FireTimerFinished()
 	{
 		Fire();
 	}
+	
+}
+
+bool UCombatComponent::CanFire() const
+{
+    if(EquippedWeapon == nullptr) return false;
+	return !EquippedWeapon->IsEmpty() && bCanFire;
+}
+
+void UCombatComponent::OnRep_CarriedAmmo()
+{
+	Controller = Controller == nullptr ? Cast<ABlasterPlayerController>(Character->Controller) : Controller;
+	if(Controller)
+	{
+		Controller->SetHUDCarriedAmmo(CarriedAmmo);
+	}
+}
+
+void UCombatComponent::InitializeCarriedAmmo()
+{
+	CarriedAmmoMap.Emplace(EWeaponType::EWT_AssaultRifle, StartingARAmmo);
 }
 
 void UCombatComponent::FireButtonPressed(bool bPressed)
