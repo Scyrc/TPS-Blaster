@@ -3,6 +3,7 @@
 #pragma once
 
 #include "CoreMinimal.h"
+#include "Blaster/BlasterTypes/CombatState.h"
 #include "Blaster/BlasterTypes/TurningInPlace.h"
 #include "Blaster/Interfaces/InteractWithCrosshairsInterface.h"
 #include "Components/TimelineComponent.h"
@@ -34,6 +35,7 @@ protected:
 	void LookUp(float Value);
 	void EquipButtonPress();
 	void CrouchButtonPress();
+	void ReloadButtonPress();
 	void AimButtonPress();
 	void CalculateAO_Pitch();
 	void AimOffset(float DeltaTime);
@@ -42,7 +44,7 @@ protected:
 	void FireButtonPressed();
 	void FireButtonReleased();
 	void PlayHitReactMontage();
-
+	
 	UFUNCTION()
 	void ReceiveDamage(AActor* DamagedActor, float Damage, const  UDamageType* DamageType,  AController* InstigatedBy, AActor* DamageCauser);
 
@@ -67,11 +69,13 @@ private:
 	UFUNCTION()
 	void OnRep_OverlappingWeapon(AWeapon* LastWeapon);
 	
-	UPROPERTY(VisibleAnywhere)
+	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, meta=(AllowPrivateAccess = "true"))
 	class UCombatComponent* Combat;
 	
 	UFUNCTION(Server, Reliable)	
 	void ServerEquipButtonPress();
+
+	
 
 
 	float AO_Yaw;
@@ -85,6 +89,9 @@ private:
 	UPROPERTY(EditAnywhere, Category="Combat")
 	UAnimMontage* FireWeaponMontage;
 
+	UPROPERTY(EditAnywhere, Category="Combat")
+	UAnimMontage* ReloadMontage;
+	
 	UPROPERTY(EditAnywhere, Category="Combat")
 	UAnimMontage* HitReactMontage;
 
@@ -168,6 +175,7 @@ public:
 	AWeapon* GetEquippedWeapon();
 	FORCEINLINE ETurningInPlace GetTuringInPlace() const {return TurningInPlace;}
 	void PlayFireMontage(bool bAiming);
+	void PlayReloadMontage();
 	void PlayElimMontage();
 	FVector GetHitTarget() const;
 	FORCEINLINE UCameraComponent* GetFollowCamera() const {return FollowCamera;}
@@ -183,5 +191,6 @@ public:
 	FORCEINLINE float GetHealth()const{return  CurrentHealth;}
 	FORCEINLINE float GetMaxHealth()const{return  MaxHealth;}
 
+	ECombatState GetCombatState() const;
 	
 };

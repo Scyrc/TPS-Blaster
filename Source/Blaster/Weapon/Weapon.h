@@ -34,6 +34,8 @@ public:
 	FORCEINLINE USkeletalMeshComponent* GetWeaponMesh() const {return WeaponMesh;}
 	virtual void Fire(const FVector& HitTarget);
 	void Dropped();
+	void Reload(int32 AmmoAmount);
+	int32 AmmoReloadNeeded() const;
 	UPROPERTY(EditAnywhere, Category = Crosshairs)
 	class UTexture2D* CrosshairsCenter;
 	
@@ -131,6 +133,6 @@ public:
 	FORCEINLINE bool IsAutomatic() const{return bAutomatic;}
 
 	bool IsEmpty() const;
-
+	FORCEINLINE bool IsAmmoFull() const { return Ammo == MagCapacity;}
 	FORCEINLINE EWeaponType GetWeaponType () const {return WeaponType;} 
 };

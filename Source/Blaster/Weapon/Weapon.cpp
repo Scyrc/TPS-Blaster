@@ -91,6 +91,20 @@ void AWeapon::Dropped()
 	OwnerController = nullptr;
 }
 
+void AWeapon::Reload(int32 AmmoAmount)
+{
+	if(Ammo == MagCapacity) return;
+
+	Ammo = FMath::Clamp(Ammo+AmmoAmount,Ammo, MagCapacity);
+
+	SetHUDAmmo();
+}
+
+int32 AWeapon::AmmoReloadNeeded() const
+{
+	return FMath::Clamp(MagCapacity-Ammo, 0, MagCapacity);
+}
+
 void AWeapon::BeginPlay()
 {
 	Super::BeginPlay();
@@ -180,7 +194,6 @@ void AWeapon::OnRep_Ammo()
 				OwnerController->SetHUDWeaponAmmo(Ammo);
 			}
 		}
-	
 }
 
 void AWeapon::Tick(float DeltaTime)
