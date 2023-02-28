@@ -9,6 +9,46 @@
 #include "GameFramework/PlayerStart.h"
 #include "Kismet/GameplayStatics.h"
 
+ABlasterGameMode::ABlasterGameMode()
+{
+	bDelayedStart = true;
+}
+
+void ABlasterGameMode::BeginPlay()
+{
+	Super::BeginPlay();
+
+	LevelStartingTime = GetWorld()->GetTimeSeconds();
+}
+
+void ABlasterGameMode::Tick(float DeltaSeconds)
+{
+	Super::Tick(DeltaSeconds);
+	if(MatchState == MatchState::WaitingToStart)
+	{
+		CountdownTime = WarmupTime + LevelStartingTime - GetWorld()->GetTimeSeconds();
+		if(CountdownTime <= 0.f)
+		{
+			StartMatch();
+		}
+	}
+}
+
+void ABlasterGameMode::OnMatchStateSet()
+{
+	Super::OnMatchStateSet();
+
+	for(FConstPlayerControllerIterator It = GetWorld()->GetPlayerControllerIterator();It;++It)
+	{
+		ABlasterPlayerController* BlasterPlayerController = Cast<ABlasterPlayerController>(*It);
+		if(BlasterPlayerController)
+		{
+			BlasterPlayerController->OnMatchStateSet(MatchState);
+		}
+	}
+	
+}
+
 void ABlasterGameMode::PlayerEliminated(ABlasterCharacter* EliminatedCharacter,ABlasterPlayerController* VictimController, ABlasterPlayerController* AttackerController)
 {
 	ABlasterPlayerState* AttackerPlayerState = AttackerController ? Cast<ABlasterPlayerState>(AttackerController->PlayerState) : nullptr;
@@ -43,3 +83,5 @@ void ABlasterGameMode::RequestRespawn(ACharacter* ElimmedCharcter, AController* 
 		RestartPlayerAtPlayerStart(ElimmedController, PlayerStarts[Selection]);
 	}
 }
+
+
