@@ -15,14 +15,41 @@ class BLASTER_API ABlasterPlayerController : public APlayerController
 	GENERATED_BODY()
 public:
 	virtual void BeginPlay() override;
+	virtual void Tick(float DeltaSeconds) override;
 	void SetHUDHealth(float Health, float MaxHealth);
 	void SetHUDScore(float Score);
 	void SetHUDDefeats(int32 Defeats);
 	void SetHUDWeaponAmmo(int32 Ammo);
 	void SetHUDCarriedAmmo(int32 Ammo);
 	void IsShowHUDWeaponAmmo(bool bShow);
+	void SetHUDMatchCountdown(float CountdownTime);
 	virtual void OnPossess(APawn* InPawn) override;
+	virtual float GetServerTime();
+	virtual void ReceivedPlayer() override;
+protected:
+	void SetHUdTime();
+	
+	/*
+	 * Sync time between client and server
+	 */
+	UFUNCTION(Server, Reliable)
+	void ServerRequertServerTime(float TimeOfClientRequest);
+
+	UFUNCTION(Client, Reliable)
+	void ClientReportServerTime(float TimeOfClientRequest, float TimeServerReceiveClientRequest);
+
+	float ClientServerDelta = 0.f; // difference between client and server time
+
+	UPROPERTY(EditAnywhere, Category="Time")
+	float TimeSyncFrequency = 5.f;
+
+	float TimeSyncRunningTime =0.f;
+	void CheckTimeSync(float DeltaTime);
+	
 private:
 	UPROPERTY()
 	class ABlasterHUD* BlasterHUD;
+
+	float MatchTime = 120.f;
+	uint32 CountdownInt = 0;
 };

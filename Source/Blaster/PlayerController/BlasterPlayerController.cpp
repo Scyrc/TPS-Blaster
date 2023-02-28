@@ -15,6 +15,47 @@ void ABlasterPlayerController::BeginPlay()
 	BlasterHUD = Cast<ABlasterHUD>(GetHUD());
 }
 
+void ABlasterPlayerController::Tick(float DeltaSeconds)
+{
+	Super::Tick(DeltaSeconds);
+	SetHUdTime();
+	CheckTimeSync(DeltaSeconds);
+}
+
+void ABlasterPlayerController::CheckTimeSync(float DeltaTime)
+{
+	TimeSyncRunningTime += DeltaTime;
+	if(IsLocalController() && TimeSyncRunningTime > TimeSyncFrequency)
+	{
+		ServerRequertServerTime(GetWorld()->GetTimeSeconds());
+		TimeSyncRunningTime = 0.f;
+	}
+}
+void ABlasterPlayerController::SetHUdTime()
+{
+	const uint32 SecondsLeft = FMath::CeilToInt(MatchTime - GetServerTime());
+	if(SecondsLeft != CountdownInt)
+	{
+		SetHUDMatchCountdown(MatchTime - GetServerTime());
+	}
+	CountdownInt = SecondsLeft;
+}
+
+
+void ABlasterPlayerController::ClientReportServerTime_Implementation(float TimeOfClientRequest, float TimeServerReceiveClientRequest)
+{
+	float RoundTripTime = GetWorld()->GetTimeSeconds() -  TimeOfClientRequest;
+	float CurrentServerTime = TimeServerReceiveClientRequest + (0.5f*RoundTripTime);
+	ClientServerDelta = CurrentServerTime - GetWorld()->GetTimeSeconds();
+}
+
+void ABlasterPlayerController::ServerRequertServerTime_Implementation(float TimeOfClientRequest)
+{
+	float ServerTimeOfReceive = GetWorld()->GetTimeSeconds();
+	ClientReportServerTime(TimeOfClientRequest, ServerTimeOfReceive);
+}
+
+
 void ABlasterPlayerController::OnPossess(APawn* InPawn)
 {
 	Super::OnPossess(InPawn);
@@ -26,6 +67,23 @@ void ABlasterPlayerController::OnPossess(APawn* InPawn)
 		SetHUDHealth(BlasterCharacter->GetHealth(), BlasterCharacter->GetMaxHealth());
 	}
 	
+}
+
+float ABlasterPlayerController::GetServerTime()
+{
+	if(HasAuthority()) return GetWorld()->GetTimeSeconds();
+
+	return GetWorld()->GetTimeSeconds() + ClientServerDelta;
+}
+
+void ABlasterPlayerController::ReceivedPlayer()
+{
+	Super::ReceivedPlayer();
+
+	if(IsLocalController())
+	{
+		ServerRequertServerTime(GetWorld()->GetTimeSeconds());
+	}
 }
 
 void ABlasterPlayerController::SetHUDHealth(float Health, float MaxHealth)
@@ -125,4 +183,20 @@ void ABlasterPlayerController::IsShowHUDWeaponAmmo(bool bShow)
 			BlasterHUD->CharacterOverlay->SlashText->SetVisibility(ESlateVisibility::Hidden);
 		}
 	}
+}
+
+void ABlasterPlayerController::SetHUDMatchCountdown(float CountdownTime)
+{
+	bool bHUDValid = BlasterHUD &&
+		BlasterHUD->CharacterOverlay&&
+		BlasterHUD->CharacterOverlay->MatchCountdownText;
+
+	if(bHUDValid)
+	{
+		const int32 Minutes = FMath::FloorToInt(CountdownTime / 60.f);
+		const int32 Seconds = CountdownTime - Minutes*60;
+		const FString CountdownText = FString::Printf(TEXT("%02d:%02d"), Minutes, Seconds);
+		BlasterHUD->CharacterOverlay->MatchCountdownText->SetText(FText::FromString(CountdownText));
+	}
+	
 }
