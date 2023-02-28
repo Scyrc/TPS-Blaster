@@ -177,6 +177,13 @@ void AWeapon::SpendRound()
 	
 }
 
+int32 AWeapon::GetRemainAmmo() 
+{
+	const int32 res = StartingRemainAmmo;
+	StartingRemainAmmo = 0;
+	return res;
+}
+
 bool AWeapon::IsEmpty() const
 {
 	return Ammo <= 0;

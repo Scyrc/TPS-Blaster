@@ -110,14 +110,14 @@ private:
 
 	//Carried Ammo for the currently-equipped weapon
 	UPROPERTY(ReplicatedUsing=OnRep_CarriedAmmo)
-	int32 CarriedAmmo;
+	int32 CarriedAmmo = -1;
 
 	UFUNCTION()
 	void OnRep_CarriedAmmo();
 
-	UPROPERTY(EditAnywhere)
-	int32 StartingARAmmo= 30;
-	void InitializeCarriedAmmo();
+	
+	//void InitializeCarriedAmmo();
+	UPROPERTY(VisibleAnywhere)
 	TMap<EWeaponType, int32> CarriedAmmoMap;
 
 	UPROPERTY(ReplicatedUsing=OnRep_CombatState)
@@ -125,5 +125,7 @@ private:
 
 	UFUNCTION()
 	void OnRep_CombatState();
+
+	void UpdateAmmoValues();
 };
 

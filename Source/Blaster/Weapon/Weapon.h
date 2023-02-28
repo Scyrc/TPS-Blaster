@@ -52,6 +52,8 @@ public:
 	class UTexture2D* CrosshairsBottom;
 	void SetHUDAmmo();
 	void IsShowHUDAmmo(bool bShow);
+
+	
 protected:
 	UPROPERTY(EditAnywhere)
 	float ZoomedFOV = 30.f;
@@ -118,11 +120,14 @@ private:
 	void SpendRound();
 	UPROPERTY(EditDefaultsOnly)
 	int32 MagCapacity;
+	UPROPERTY(EditDefaultsOnly)
+	int32 StartingRemainAmmo= 90;
+
 	UPROPERTY()
 	class ABlasterCharacter* OwnerCharacter;
 	UPROPERTY()
 	class ABlasterPlayerController* OwnerController;
-
+	
 	UPROPERTY(EditAnywhere)
 	EWeaponType WeaponType;
 public:
@@ -134,5 +139,9 @@ public:
 
 	bool IsEmpty() const;
 	FORCEINLINE bool IsAmmoFull() const { return Ammo == MagCapacity;}
-	FORCEINLINE EWeaponType GetWeaponType () const {return WeaponType;} 
+	FORCEINLINE EWeaponType GetWeaponType () const {return WeaponType;}
+	int32  GetRemainAmmo();
+
+	UPROPERTY(EditAnywhere)
+	class USoundCue* EquipSound;
 };
