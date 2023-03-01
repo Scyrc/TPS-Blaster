@@ -9,6 +9,10 @@
 #include "GameFramework/PlayerStart.h"
 #include "Kismet/GameplayStatics.h"
 
+namespace MatchState
+{
+	const FName Cooldown = FName("Cooldown");
+}
 ABlasterGameMode::ABlasterGameMode()
 {
 	bDelayedStart = true;
@@ -19,6 +23,7 @@ void ABlasterGameMode::BeginPlay()
 	Super::BeginPlay();
 
 	LevelStartingTime = GetWorld()->GetTimeSeconds();
+	//UE_LOG(LogTemp, Warning, TEXT("LevelStartingTime: %f"), LevelStartingTime);
 }
 
 void ABlasterGameMode::Tick(float DeltaSeconds)
@@ -30,6 +35,14 @@ void ABlasterGameMode::Tick(float DeltaSeconds)
 		if(CountdownTime <= 0.f)
 		{
 			StartMatch();
+		}
+	}
+	else if(MatchState == MatchState::InProgress)
+	{
+		CountdownTime = MatchTime + WarmupTime + LevelStartingTime - GetWorld()->GetTimeSeconds();
+		if(CountdownTime <= 0.f)
+		{
+			SetMatchState(MatchState::Cooldown);
 		}
 	}
 }
