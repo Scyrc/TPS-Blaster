@@ -26,6 +26,8 @@ public:
 	virtual void TickComponent(float DeltaTime, ELevelTick TickType, FActorComponentTickFunction* ThisTickFunction) override;
 	UFUNCTION(BlueprintCallable)
 	void FinishReloading();
+	void FireButtonPressed(bool bPressed);
+
 protected:
 	
 	virtual void BeginPlay() override;
@@ -41,7 +43,6 @@ protected:
 	UFUNCTION(Server, Reliable)	
 	void ServerReload();
 	
-	void FireButtonPressed(bool bPressed);
 	UFUNCTION(Server, Reliable)
 	void ServerFire(const FVector_NetQuantize& TracerHitTarget);
 

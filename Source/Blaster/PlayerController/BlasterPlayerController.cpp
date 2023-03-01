@@ -3,6 +3,7 @@
 
 #include "BlasterPlayerController.h"
 
+#include "Blaster/BlasterComponents/CombatComponent.h"
 #include "Blaster/Character/BlasterCharacter.h"
 #include "Blaster/GameMode/BlasterGameMode.h"
 #include "Blaster/HUD/Announcement.h"
@@ -395,4 +396,12 @@ void ABlasterPlayerController::HandleMatchCooldown()
 			BlasterHUD->Announcement->InfoText->SetText(FText());
 		}
 	}
+	
+	ABlasterCharacter* BlasterCharacter = Cast<ABlasterCharacter>(GetPawn());
+	if(BlasterCharacter && BlasterCharacter->GetCombatComponent())
+	{
+		BlasterCharacter->bDisableGamePlay = true;
+		BlasterCharacter->GetCombatComponent()->FireButtonPressed(false);
+	}
+	
 }
