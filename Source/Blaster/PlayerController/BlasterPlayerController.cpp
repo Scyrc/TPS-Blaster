@@ -316,7 +316,7 @@ void ABlasterPlayerController::SetHUDAnnouncementCountdown(float CountdownTime)
 void ABlasterPlayerController::HandleMatchHasStarted()
 {
 	BlasterHUD = BlasterHUD == nullptr ? Cast<ABlasterHUD>(GetHUD()) : BlasterHUD;
-	if(BlasterHUD)
+	if(BlasterHUD && IsLocalController())
 	{
 		BlasterHUD->AddCharacterOverlay();
 		if(BlasterHUD->Announcement)

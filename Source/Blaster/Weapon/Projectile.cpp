@@ -52,6 +52,7 @@ void AProjectile::BeginPlay()
 	
 }
 
+// run on server
 void AProjectile::OnHit(UPrimitiveComponent* HitComp, AActor* OtherActor, UPrimitiveComponent* OtherComp, FVector NormalImpulse, const FHitResult& HitResult)
 {
 	if(ImpactParticles)
@@ -75,8 +76,17 @@ void AProjectile::Tick(float DeltaTime)
 
 void AProjectile::Destroyed()
 {
+	if(!HasAuthority())
+	{
+		if (ImpactParticles)
+		{
+			UGameplayStatics::SpawnEmitterAtLocation(GetWorld(), ImpactParticles, GetActorTransform());
+		}
+		if (ImpactSound)
+		{
+			UGameplayStatics::PlaySoundAtLocation(this, ImpactSound, GetActorLocation());
+		}
+	}
 	Super::Destroyed();
-
-	
 }
 

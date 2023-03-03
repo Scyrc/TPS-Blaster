@@ -22,6 +22,10 @@ void ABlasterHUD::AddCharacterOverlay()
 
 	if(PlayerController && CharacterOverlayClass)
 	{
+		if(CharacterOverlay)
+		{
+			CharacterOverlay->RemoveFromParent();
+		}
 		CharacterOverlay = CreateWidget<UCharacterOverlay>(GetWorld(), CharacterOverlayClass);
 		CharacterOverlay->AddToViewport();
 	}
