@@ -42,6 +42,9 @@ protected:
 	
 	UPROPERTY(VisibleDefaultsOnly, Category=Rocket)
 	class UAudioComponent* ProjectileLoopComp;
+	
+	UPROPERTY(VisibleDefaultsOnly, Category=Rocket)
+	class URocketMovementComponent* RocketMovementComponent;
 private:
 	UPROPERTY(VisibleAnywhere, Category=Rocket)
 	UStaticMeshComponent* RocketMesh;

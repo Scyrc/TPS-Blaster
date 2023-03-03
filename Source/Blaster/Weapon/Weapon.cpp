@@ -108,6 +108,8 @@ int32 AWeapon::AmmoReloadNeeded() const
 void AWeapon::BeginPlay()
 {
 	Super::BeginPlay();
+	
+	SetReplicateMovement(true);
 
 	if (PickupWidget)
 	{
