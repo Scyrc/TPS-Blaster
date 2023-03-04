@@ -59,8 +59,14 @@ void AHitScanWeapon::Fire(const FVector& HitTarget)
 						FireHit.ImpactNormal.Rotation()
 						);
 				}
-
-				
+				if(HitSound)
+				{
+					UGameplayStatics::PlaySoundAtLocation(
+						World,
+						HitSound,
+						FireHit.ImpactPoint
+					);
+				}
 			}
 
 			if(BeamParticles)
@@ -77,5 +83,24 @@ void AHitScanWeapon::Fire(const FVector& HitTarget)
 				}
 			}
 		}
+
+		if(MuzzleFlash)
+		{
+			UGameplayStatics::SpawnEmitterAtLocation(
+				World,
+				MuzzleFlash,
+				SocketTransFrom
+			);
+		}
+		if(FireSound)
+		{
+			UGameplayStatics::PlaySoundAtLocation(
+				World,
+				FireSound,
+				GetActorLocation()
+			);
+		}
 	}
+
+	
 }
