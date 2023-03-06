@@ -2,6 +2,7 @@
 
 #include "Projectile.h"
 
+#include "NiagaraFunctionLibrary.h"
 #include "Blaster/Character/BlasterCharacter.h"
 #include "Components/BoxComponent.h"
 #include "GameFramework/ProjectileMovementComponent.h"
@@ -64,10 +65,42 @@ void AProjectile::OnHit(UPrimitiveComponent* HitComp, AActor* OtherActor, UPrimi
 	Destroy();
 }
 
+void AProjectile::SpawnTrailSystem()
+{
+	if(TrailSystem)
+	{
+		TrailSystemComp =  UNiagaraFunctionLibrary::SpawnSystemAttached(
+			TrailSystem, 
+			GetRootComponent(),
+			FName(),
+			GetActorLocation(),
+			GetActorRotation(),
+			EAttachLocation::KeepWorldPosition,
+			false
+			);
+	}
+}
+
 void AProjectile::Tick(float DeltaTime)
 {
 	Super::Tick(DeltaTime);
 
+}
+
+void AProjectile::StartDestroyTimers()
+{
+	GetWorldTimerManager().SetTimer(
+			DestroyTimer,
+			this,
+			&AProjectile::DestroyTimerFinished,
+			DestroyTime
+			);
+}
+
+
+void AProjectile::DestroyTimerFinished()
+{
+	Destroy();
 }
 
 void AProjectile::Destroyed()
@@ -84,5 +117,34 @@ void AProjectile::Destroyed()
 		}
 	}
 	Super::Destroyed();
+}
+
+void AProjectile::ExplodeDamage()
+{
+	if(HasAuthority())
+	{
+		APawn* FirePawn = GetInstigator();
+		if(FirePawn)
+		{
+			AController* FireController = FirePawn->GetController();
+			if(FireController)
+			{
+				UGameplayStatics::ApplyRadialDamageWithFalloff(
+					this,
+					Damage,
+					MinDamage,
+					GetActorLocation(),
+					DamageInnerRadius,
+					DamageOuterRadius,
+					1.f,
+					UDamageType::StaticClass(),
+					TArray<AActor*>(),
+					this,
+					FireController);
+			}
+		}
+		
+		StartDestroyTimers();
+	}
 }
 

@@ -15,13 +15,17 @@ public:
 	AProjectile();
 	virtual void Tick(float DeltaTime) override;
 	virtual void Destroyed() override;
-	
+	void ExplodeDamage();
 protected:
 	virtual void BeginPlay() override;
-	
+	void DestroyTimerFinished();
+	void StartDestroyTimers();
 	UFUNCTION()
 	virtual void OnHit(UPrimitiveComponent* HitComp, AActor* OtherActor, UPrimitiveComponent* OtherComp, FVector NormalImpulse, const FHitResult& HitResult);
 
+	UPROPERTY(VisibleAnywhere, Category="Projectile pros")
+	UStaticMeshComponent* ProjectMesh;
+	
 	UPROPERTY(EditAnywhere)
 	float Damage = 20.f;
 	UPROPERTY(EditDefaultsOnly)
@@ -35,12 +39,25 @@ protected:
 
 	UPROPERTY(EditAnywhere)
 	class UBoxComponent* CollisionBox;
+
+	UPROPERTY(EditDefaultsOnly, Category="Projectile pros")
+	class UNiagaraSystem* TrailSystem;
+	
+	UPROPERTY(VisibleDefaultsOnly, Category=Rocket)
+	class UNiagaraComponent* TrailSystemComp;
+
+	void SpawnTrailSystem();
+
+	UPROPERTY(EditDefaultsOnly, Category=Damage)
+	float MinDamage = 10.f;
+	
+	UPROPERTY(EditDefaultsOnly, Category=Damage)
+	float DamageInnerRadius = 200.f;
+	
+	UPROPERTY(EditDefaultsOnly, Category=Damage)
+	float DamageOuterRadius = 500.f;
 	
 private:
-
-
-	
-
 	UPROPERTY(EditAnywhere)	
 	class UParticleSystem* Tracer;
 	
@@ -48,5 +65,10 @@ private:
 	class UParticleSystemComponent* TracerComp;
 
 
+	
+	FTimerHandle DestroyTimer;
+
+	UPROPERTY(EditDefaultsOnly, Category="Projectile pros")
+	float DestroyTime = 3.f;
 
 };
