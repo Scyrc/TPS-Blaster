@@ -4,6 +4,7 @@
 #include "Weapon.h"
 
 #include "Casing.h"
+#include "Blaster/BlasterComponents/CombatComponent.h"
 #include "Components/SphereComponent.h"
 #include "Components/WidgetComponent.h"
 #include "Blaster/Character/BlasterCharacter.h"
@@ -210,6 +211,11 @@ void AWeapon::OnRep_Ammo()
 			{
 				OwnerController->SetHUDWeaponAmmo(Ammo);
 			}
+		}
+
+		if(OwnerCharacter && OwnerCharacter->GetCombatComponent() && IsAmmoFull() && WeaponType == EWeaponType::EWT_Shotgun)
+		{
+			OwnerCharacter->GetCombatComponent()->JumpToShotgunEnd();
 		}
 }
 

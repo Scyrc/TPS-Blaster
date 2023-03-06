@@ -201,7 +201,6 @@ void UCombatComponent::FinishReloading()
 		{
 			Fire();
 		}
-		
 	}
 
 }
@@ -223,6 +222,39 @@ void UCombatComponent::UpdateAmmoValues()
 		{
 			Controller->SetHUDCarriedAmmo(CarriedAmmo);
 		}
+	}
+}
+
+void UCombatComponent::UpdateShotgunAmmoValues()
+{
+	if(Character == nullptr || EquippedWeapon == nullptr) return;
+	if(CarriedAmmoMap.Contains(EquippedWeapon->GetWeaponType()) && CarriedAmmoMap[EquippedWeapon->GetWeaponType()] > 0)
+	{
+		CarriedAmmoMap[EquippedWeapon->GetWeaponType()] -= 1;
+		CarriedAmmo = CarriedAmmoMap[EquippedWeapon->GetWeaponType()];
+		EquippedWeapon->Reload(1);
+		bCanFire = true;
+		Controller = Controller == nullptr ? Cast<ABlasterPlayerController>(Character->Controller) : Controller;
+		if(Controller)
+		{
+			Controller->SetHUDCarriedAmmo(CarriedAmmo);
+		}
+		if(EquippedWeapon->IsAmmoFull() || CarriedAmmo == 0)
+		{
+			JumpToShotgunEnd();
+		}
+	}
+}
+
+void UCombatComponent::JumpToShotgunEnd()
+{
+	// jump to shotgunend selection
+	UAnimInstance* AnimInstance = Character->GetMesh()->GetAnimInstance();
+	if(AnimInstance && Character->GetReloadMontage())
+	{
+		AnimInstance->Montage_Play(Character->GetReloadMontage());
+		const FName SectionName("ShotgunEnd");
+		AnimInstance->Montage_JumpToSection(SectionName);
 	}
 }
 
@@ -276,9 +308,12 @@ void UCombatComponent::FireTimerFinished()
 bool UCombatComponent::CanFire() const
 {
     if(EquippedWeapon == nullptr) return false;
+	if(!EquippedWeapon->IsEmpty() && bCanFire && CombatState == ECombatState::ECS_Reloading && EquippedWeapon->GetWeaponType() == EWeaponType::EWT_Shotgun) return true;
+
 	return !EquippedWeapon->IsEmpty() && bCanFire && CombatState == ECombatState::ECS_Unoccupied;
 }
 
+// RUN ON CLIENT
 void UCombatComponent::OnRep_CarriedAmmo()
 {
 	Controller = Controller == nullptr ? Cast<ABlasterPlayerController>(Character->Controller) : Controller;
@@ -288,6 +323,17 @@ void UCombatComponent::OnRep_CarriedAmmo()
 	{
 		Controller->SetHUDCarriedAmmo(CarriedAmmo);
 	}
+
+	bool bJumpToShotgunEnd = CarriedAmmo == 0 &&
+		CombatState == ECombatState::ECS_Reloading &&
+		EquippedWeapon != nullptr &&
+		EquippedWeapon->GetWeaponType() == EWeaponType::EWT_Shotgun;
+
+	if(bJumpToShotgunEnd)
+	{
+		JumpToShotgunEnd();
+	}
+		
 }
 
 /*void UCombatComponent::InitializeCarriedAmmo()
@@ -306,6 +352,14 @@ void UCombatComponent::FireButtonPressed(bool bPressed)
 	}
 }
 
+void UCombatComponent::ShotgunShellReload()
+{
+	if(Character && Character->HasAuthority())
+	{
+		UpdateShotgunAmmoValues();
+	}
+}
+
 void UCombatComponent::ServerFire_Implementation(const FVector_NetQuantize& TracerHitTarget)
 {
 	MulticastFire(TracerHitTarget);
@@ -314,6 +368,13 @@ void UCombatComponent::ServerFire_Implementation(const FVector_NetQuantize& Trac
 void UCombatComponent::MulticastFire_Implementation(const FVector_NetQuantize& TracerHitTarget)
 {
 	if(EquippedWeapon == nullptr) return;
+	if(Character && CombatState == ECombatState::ECS_Reloading && EquippedWeapon->GetWeaponType() == EWeaponType::EWT_Shotgun)
+	{
+		Character->PlayFireMontage(bAiming);
+		EquippedWeapon->Fire(TracerHitTarget);
+		CombatState = ECombatState::ECS_Unoccupied;
+		return;
+	}
 	if(Character && CombatState == ECombatState::ECS_Unoccupied)
 	{
 		Character->PlayFireMontage(bAiming);
