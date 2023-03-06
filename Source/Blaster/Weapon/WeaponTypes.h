@@ -15,3 +15,15 @@ enum class EWeaponType : uint8
 
 	EWT_MAX UMETA(DisplayName = "DefaultMAX")
 };
+
+
+UENUM(BlueprintType)
+enum class EWeaponHighLight : uint8
+{
+	None = 0,
+	EWHL_PURPLE=250 UMETA(DisplayName = "PURPLE"),
+	EWHL_BLUE UMETA(DisplayName = "BLUE"),
+	EWHL_TAN UMETA(DisplayName = "TAN"),
+
+	EWHL_MAX UMETA(DisplayName = "DefaultMAX")
+};

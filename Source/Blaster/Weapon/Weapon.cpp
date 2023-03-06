@@ -25,6 +25,10 @@ AWeapon::AWeapon()
 	WeaponMesh->SetCollisionResponseToChannel(ECollisionChannel::ECC_Pawn ,ECollisionResponse::ECR_Ignore);
 	WeaponMesh->SetCollisionEnabled(ECollisionEnabled::NoCollision);
 
+	WeaponMesh->SetCustomDepthStencilValue(NumberOfWeaponHighLight());
+	WeaponMesh->MarkRenderStateDirty();
+	EnableCustomDepth(true);
+	
 	AreaSphere = CreateDefaultSubobject<USphereComponent>("AreaSphere");
 	AreaSphere->SetupAttachment(RootComponent);
 	AreaSphere->SetCollisionResponseToAllChannels(ECollisionResponse::ECR_Ignore);
@@ -74,6 +78,14 @@ void AWeapon::IsShowHUDAmmo(bool bShow)
 		{
 			OwnerController->IsShowHUDWeaponAmmo(bShow);
 		}
+	}
+}
+
+void AWeapon::EnableCustomDepth(bool bEnable)
+{
+	if(WeaponMesh)
+	{
+		WeaponMesh->SetRenderCustomDepth(bEnable);
 	}
 }
 
@@ -150,6 +162,7 @@ void AWeapon::OnSphereEndOverlap(UPrimitiveComponent* OVerlappedComponent, AActo
 	}
 }
 
+// run on client
 void AWeapon::OnRep_WeaponState()
 {
 	switch (WeaponState)
@@ -166,6 +179,7 @@ void AWeapon::OnRep_WeaponState()
 			WeaponMesh->SetEnableGravity(true);
 			WeaponMesh->SetCollisionResponseToChannels(ECollisionResponse::ECR_Ignore);
 		}
+		EnableCustomDepth(false);
 		break;
 	case EWeaponState::EWS_Dropped:
 		WeaponMesh->SetCollisionEnabled(ECollisionEnabled::QueryAndPhysics);
@@ -174,6 +188,11 @@ void AWeapon::OnRep_WeaponState()
 		WeaponMesh->SetCollisionResponseToAllChannels(ECollisionResponse::ECR_Block);
 		WeaponMesh->SetCollisionResponseToChannel(ECollisionChannel::ECC_Pawn ,ECollisionResponse::ECR_Ignore);
 		WeaponMesh->SetCollisionResponseToChannel(ECollisionChannel::ECC_Camera ,ECollisionResponse::ECR_Ignore);
+		
+		WeaponMesh->SetCustomDepthStencilValue(NumberOfWeaponHighLight());
+		WeaponMesh->MarkRenderStateDirty();
+		EnableCustomDepth(true);
+		
 		break; 
 	}
 }
@@ -198,6 +217,20 @@ int32 AWeapon::GetRemainAmmo()
 bool AWeapon::IsEmpty() const
 {
 	return Ammo <= 0;
+}
+
+int32 AWeapon::NumberOfWeaponHighLight() const
+{
+	switch (WeaponHighLight)
+	{
+	case EWeaponHighLight::EWHL_PURPLE:
+		return 250;
+	case EWeaponHighLight::EWHL_BLUE:
+		return 251;
+	case EWeaponHighLight::EWHL_TAN:
+		return 252;
+	default: return 252;;
+	}
 }
 
 // run on all client
@@ -291,6 +324,7 @@ void AWeapon::SetWeaponState(EWeaponState State)
 			WeaponMesh->SetEnableGravity(true);
 			WeaponMesh->SetCollisionResponseToChannels(ECollisionResponse::ECR_Ignore);
 		}
+		EnableCustomDepth(false);
 		break;
 	case EWeaponState::EWS_Dropped:
 		if(HasAuthority())
@@ -303,6 +337,11 @@ void AWeapon::SetWeaponState(EWeaponState State)
 		WeaponMesh->SetCollisionResponseToAllChannels(ECollisionResponse::ECR_Block);
 		WeaponMesh->SetCollisionResponseToChannel(ECollisionChannel::ECC_Pawn ,ECollisionResponse::ECR_Ignore);
 		WeaponMesh->SetCollisionResponseToChannel(ECollisionChannel::ECC_Camera ,ECollisionResponse::ECR_Ignore);
+
+		WeaponMesh->SetCustomDepthStencilValue(NumberOfWeaponHighLight());
+		WeaponMesh->MarkRenderStateDirty();
+		EnableCustomDepth(true);
+		
 		break; 
 	}
 }

@@ -53,6 +53,11 @@ public:
 	void SetHUDAmmo();
 	void IsShowHUDAmmo(bool bShow);
 
+	/*
+	 * Enable or Disable custom depth
+	 */
+
+	void EnableCustomDepth(bool bEnable);
 	
 protected:
 	UPROPERTY(EditAnywhere)
@@ -90,6 +95,7 @@ protected:
 		int32 OtherBodyIndex
 	);
 
+	
 private:
 	UPROPERTY(VisibleAnywhere, Category="Weapon Properties")
 	USkeletalMeshComponent* WeaponMesh;
@@ -109,6 +115,11 @@ private:
 	UPROPERTY(EditAnywhere, Category="Weapon Properies")
 	class UAnimationAsset* FireAnimation;
 
+	UPROPERTY(EditDefaultsOnly, Category="Weapon Properties")
+	EWeaponHighLight WeaponHighLight = EWeaponHighLight::EWHL_BLUE;
+	
+	int32 NumberOfWeaponHighLight() const;
+	
 	UPROPERTY(EditAnywhere)
 	TSubclassOf<class ACasing> CasingClass;
 
