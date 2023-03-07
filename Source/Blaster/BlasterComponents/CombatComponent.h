@@ -29,6 +29,12 @@ public:
 	UFUNCTION(BlueprintCallable)
 	void ShotgunShellReload();
 	void JumpToShotgunEnd();
+	
+	UFUNCTION(BlueprintCallable)
+	void ThrowGrenadeFinished();
+	
+	UFUNCTION(BlueprintCallable)
+	void LaunchGrenade();
 protected:
 	
 	virtual void BeginPlay() override;
@@ -40,7 +46,6 @@ protected:
 	void OnRep_EquippedWeaopn();
 	void Fire();
 	void Reload();
-	
 	UFUNCTION(Server, Reliable)	
 	void ServerReload();
 	
@@ -57,7 +62,21 @@ protected:
 
 	void SetHUDCrosshairs(float DeltaTime);
 
+	void ThrowGrenade();
 
+	UFUNCTION(Server, Reliable)
+	void ServerThrowGrenade();
+
+	void DropEquippedWeapon();
+
+	void AttachActorToRightHand(AActor* ActorToAttach);
+	void AttachActorToLeftHand(AActor* ActorToAttach);
+
+	void UpdateCarriedAmmo();
+	void PlayEquipWeaponSound();
+	void ReloadEmptyWeapon();
+
+	void ShowAttachedGrenade(bool bShow);
 private:
 	UPROPERTY()
 	ABlasterCharacter* Character;
