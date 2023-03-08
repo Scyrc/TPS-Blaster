@@ -69,7 +69,10 @@ void ABlasterCharacter::BeginPlay()
 	Super::BeginPlay();
 	
 	UpdateHUDHealth();
-
+	/*if(Combat)
+	{
+		Combat->UpdateHUDGrenades();
+	}*/
 	if(HasAuthority())
 	{
 		OnTakeAnyDamage.AddDynamic(this, &ABlasterCharacter::ReceiveDamage);
@@ -446,6 +449,7 @@ void ABlasterCharacter::OnRep_Health()
 
 void ABlasterCharacter::ReceiveDamage(AActor* DamagedActor, float Damage, const UDamageType* DamageType,AController* InstigatedBy, AActor* DamageCauser)
 {
+	if(bElimmed) return;
 	CurrentHealth = FMath::Clamp(CurrentHealth - Damage, 0.f, MaxHealth);
 	UpdateHUDHealth();
 	PlayHitReactMontage();

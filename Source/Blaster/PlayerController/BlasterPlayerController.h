@@ -24,6 +24,7 @@ public:
 	void IsShowHUDWeaponAmmo(bool bShow);
 	void SetHUDMatchCountdown(float CountdownTime);
 	void SetHUDAnnouncementCountdown(float CountdownTime);
+	void SetHUDGrenades(int32 Grenades);
 
 	virtual void OnPossess(APawn* InPawn) override;
 	virtual float GetServerTime();
@@ -86,4 +87,6 @@ private:
 	float HUDMaxHealth;
 	float HUDScore;
 	int32 HUDDefeats;
+	int32 HUDGrenades;
+
 };
