@@ -30,6 +30,8 @@ public:
 	bool bDisableGamePlay=false;
 	UFUNCTION(BlueprintImplementableEvent)
 	void ShowSniperScopeWidget(bool bShowScope);
+	void UpdateHUDHealth();
+
 protected:
 
 	virtual void BeginPlay() override;
@@ -54,7 +56,6 @@ protected:
 	UFUNCTION()
 	void ReceiveDamage(AActor* DamagedActor, float Damage, const  UDamageType* DamageType,  AController* InstigatedBy, AActor* DamageCauser);
 
-	void UpdateHUDHealth();
 
 	void PollInit();
 
@@ -77,6 +78,9 @@ private:
 	
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, meta=(AllowPrivateAccess = "true"))
 	class UCombatComponent* Combat;
+
+	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, meta=(AllowPrivateAccess = "true"))
+	class UBuffComponent* Buff;
 	
 	UFUNCTION(Server, Reliable)	
 	void ServerEquipButtonPress();
@@ -127,7 +131,7 @@ private:
 	float CurrentHealth = 100.f;
 	
 	UFUNCTION()
-	void OnRep_Health();
+	void OnRep_Health(float LastHealth);
 	
 	UPROPERTY()
 	class ABlasterPlayerController* BlasterPlayerController;
@@ -206,11 +210,15 @@ public:
 	void Elim();
 
 	FORCEINLINE float GetHealth()const{return  CurrentHealth;}
+	FORCEINLINE void SetHealth(float Amount){CurrentHealth = Amount;}
+
 	FORCEINLINE float GetMaxHealth()const{return  MaxHealth;}
 
 	ECombatState GetCombatState() const;
 
 	FORCEINLINE UCombatComponent* GetCombatComponent()const {return Combat;}
+	FORCEINLINE UBuffComponent* GetBuffComponent()const {return Buff;}
+
 	FORCEINLINE bool GetDisableGameplay() const {return bDisableGamePlay;}
 	FORCEINLINE UAnimMontage* GetReloadMontage() const {return ReloadMontage;}
 	FORCEINLINE UStaticMeshComponent* GetAttachedGrenade() const {return AttachedGrenade;}
