@@ -33,6 +33,26 @@ void UCombatComponent::GetLifetimeReplicatedProps(TArray<FLifetimeProperty>& Out
 
 }
 
+// run on server
+void UCombatComponent::PickAmmo(float AmmoAmount, EWeaponType WeaponType)
+{
+	if(CarriedAmmoMap.Contains(WeaponType))
+	{
+		CarriedAmmoMap[WeaponType] = FMath::Clamp(CarriedAmmoMap[WeaponType] + AmmoAmount, 0, MaxCarriedAmmo);
+	}
+	else
+	{
+		CarriedAmmoMap.Emplace(WeaponType,  FMath::Clamp(AmmoAmount, 0, MaxCarriedAmmo));
+	}
+	
+	UpdateCarriedAmmo();
+
+	// auto Relao
+	if(EquippedWeapon && EquippedWeapon->GetWeaponType() == WeaponType && EquippedWeapon->IsEmpty())
+	{
+		Reload();
+	}
+}
 
 void UCombatComponent::BeginPlay()
 {

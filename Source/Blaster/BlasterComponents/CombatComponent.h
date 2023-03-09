@@ -40,6 +40,8 @@ public:
 	void ServerLaunchGrenade(const FVector_NetQuantize& Target);
 
 	FORCEINLINE int32 GetGrenades() const{return Grenades;}
+
+	void PickAmmo(float AmmoAmount, EWeaponType WeaponType);
 	
 protected:
 	
@@ -141,7 +143,10 @@ private:
 	//Carried Ammo for the currently-equipped weapon
 	UPROPERTY(ReplicatedUsing=OnRep_CarriedAmmo)
 	int32 CarriedAmmo = -1;
-
+	
+	UPROPERTY(EditDefaultsOnly)
+	int32 MaxCarriedAmmo = 500;
+	
 	UFUNCTION()
 	void OnRep_CarriedAmmo();
 
