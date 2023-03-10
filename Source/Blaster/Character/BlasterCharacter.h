@@ -31,6 +31,8 @@ public:
 	UFUNCTION(BlueprintImplementableEvent)
 	void ShowSniperScopeWidget(bool bShowScope);
 	void UpdateHUDHealth();
+	void UpdateHUDShield();
+
 
 protected:
 
@@ -132,6 +134,18 @@ private:
 	
 	UFUNCTION()
 	void OnRep_Health(float LastHealth);
+	/*
+	 * Player Shield
+	 */
+
+	UPROPERTY(EditAnywhere, Category = playerState)
+	float MaxShield = 100.f;
+	
+	UPROPERTY(ReplicatedUsing = OnRep_Shield, VisibleAnywhere, Category = playerState)
+	float CurrentShield = 100.f;
+	
+	UFUNCTION()
+	void OnRep_Shield(float LastShield);
 	
 	UPROPERTY()
 	class ABlasterPlayerController* BlasterPlayerController;
@@ -211,8 +225,11 @@ public:
 
 	FORCEINLINE float GetHealth()const{return  CurrentHealth;}
 	FORCEINLINE void SetHealth(float Amount){CurrentHealth = Amount;}
-
 	FORCEINLINE float GetMaxHealth()const{return  MaxHealth;}
+
+	FORCEINLINE float GetShield()const{return  CurrentShield;}
+	FORCEINLINE void SetShield(float Amount){CurrentShield = Amount;}
+	FORCEINLINE float GetMaxShield()const{return  MaxShield;}
 
 	ECombatState GetCombatState() const;
 

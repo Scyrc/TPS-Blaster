@@ -7,7 +7,6 @@
 #include "Blaster/BlasterComponents/BuffComponent.h"
 #include "Blaster/BlasterComponents/CombatComponent.h"
 #include "Blaster/GameMode/BlasterGameMode.h"
-#include "Blaster/GameState/BlasterGameState.h"
 #include "Blaster/PlayerController/BlasterPlayerController.h"
 #include "Blaster/PlayerState/BlasterPlayerState.h"
 #include "GameFramework/SpringArmComponent.h"
@@ -73,6 +72,7 @@ void ABlasterCharacter::BeginPlay()
 	Super::BeginPlay();
 	
 	UpdateHUDHealth();
+	UpdateHUDShield();
 	/*if(Combat)
 	{
 		Combat->UpdateHUDGrenades();
@@ -94,6 +94,7 @@ void ABlasterCharacter::GetLifetimeReplicatedProps(TArray<FLifetimeProperty>& Ou
 
 	DOREPLIFETIME_CONDITION(ABlasterCharacter, OverlappingWeapon, ELifetimeCondition::COND_OwnerOnly);
 	DOREPLIFETIME(ABlasterCharacter, CurrentHealth);
+	DOREPLIFETIME(ABlasterCharacter, CurrentShield);
 	DOREPLIFETIME(ABlasterCharacter, bDisableGamePlay);
 }
 
@@ -172,6 +173,15 @@ void ABlasterCharacter::UpdateHUDHealth()
 	if(BlasterPlayerController)
 	{
 		BlasterPlayerController->SetHUDHealth(CurrentHealth, MaxHealth);
+	}
+}
+
+void ABlasterCharacter::UpdateHUDShield()
+{
+	BlasterPlayerController = BlasterPlayerController == nullptr ? Cast<ABlasterPlayerController>(Controller) : BlasterPlayerController;
+	if(BlasterPlayerController)
+	{
+		BlasterPlayerController->SetHUDShield(CurrentShield, MaxShield);
 	}
 }
 
@@ -460,11 +470,35 @@ void ABlasterCharacter::OnRep_Health(float LastHealth)
 	}
 }
 
+void ABlasterCharacter::OnRep_Shield(float LastShield)
+{
+	UpdateHUDShield();
+	if(LastShield > CurrentShield)
+	{
+		PlayHitReactMontage();
+	}
+}
+
 void ABlasterCharacter::ReceiveDamage(AActor* DamagedActor, float Damage, const UDamageType* DamageType,AController* InstigatedBy, AActor* DamageCauser)
 {
 	if(bElimmed) return;
-	CurrentHealth = FMath::Clamp(CurrentHealth - Damage, 0.f, MaxHealth);
+	float DamageToHealth = Damage;
+	if(CurrentShield > 0.f)
+	{
+		if(CurrentShield >= Damage)
+		{
+			CurrentShield = FMath::Clamp(CurrentShield - Damage, 0.f, CurrentShield);
+			DamageToHealth = 0.f;
+		}
+		else
+		{
+			DamageToHealth = FMath::Clamp(Damage - CurrentShield, 0.f, Damage);
+			CurrentShield = 0.f;
+		}
+	}
+	CurrentHealth = FMath::Clamp(CurrentHealth - DamageToHealth, 0.f, MaxHealth);
 	UpdateHUDHealth();
+	UpdateHUDShield();
 	PlayHitReactMontage();
 
 	if(CurrentHealth == 0.f)

@@ -42,21 +42,23 @@ void ABlasterPlayerController::Tick(float DeltaSeconds)
 
 void ABlasterPlayerController::PollInit()
 {
-	if(CharacterOverlay == nullptr)
+	if(CharacterOverlay == nullptr && BlasterHUD && BlasterHUD->CharacterOverlay)
 	{
-		if(BlasterHUD && BlasterHUD->CharacterOverlay)
+		CharacterOverlay = BlasterHUD->CharacterOverlay;
+		if(CharacterOverlay)
 		{
-			CharacterOverlay = BlasterHUD->CharacterOverlay;
-			SetHUDHealth(HUDHealth, HUDMaxHealth);
-			SetHUDScore(HUDScore);
-			SetHUDDefeats(HUDDefeats);
+			if(bInitializeHealth) SetHUDHealth(HUDHealth, HUDMaxHealth);
+			if(bInitializeShield) SetHUDShield(HUDShield, HUDMaxShield);
+			if(bInitializeScore) SetHUDScore(HUDScore);
+			if(bInitializeDefeats) SetHUDDefeats(HUDDefeats);
 			ABlasterCharacter* BlasterCharacter = Cast<ABlasterCharacter>(GetPawn());
-			if(BlasterCharacter && BlasterCharacter->GetCombatComponent())
+			if(BlasterCharacter && BlasterCharacter->GetCombatComponent()&&bInitializeGrenades)
 			{
 				SetHUDGrenades(BlasterCharacter->GetCombatComponent()->GetGrenades());
 			}
 		}
 	}
+	
 }
 
 void ABlasterPlayerController::CheckTimeSync(float DeltaTime)
@@ -135,6 +137,11 @@ void ABlasterPlayerController::OnPossess(APawn* InPawn)
 	if(BlasterCharacter)
 	{
 		SetHUDHealth(BlasterCharacter->GetHealth(), BlasterCharacter->GetMaxHealth());
+		SetHUDShield(BlasterCharacter->GetShield(), BlasterCharacter->GetMaxShield());
+		if(BlasterCharacter->GetCombatComponent())
+		{
+			SetHUDGrenades(BlasterCharacter->GetCombatComponent()->GetGrenades());
+		}
 	}
 	
 }
@@ -174,9 +181,33 @@ void ABlasterPlayerController::SetHUDHealth(float Health, float MaxHealth)
 	}
 	else
 	{
-		bInitialzeCharacterOverlay = true;
+		bInitializeHealth = true;
 		HUDHealth = Health;
 		HUDMaxHealth = MaxHealth;
+	}
+}
+
+void ABlasterPlayerController::SetHUDShield(float Shield, float MaxShield)
+{
+	BlasterHUD = BlasterHUD == nullptr ? Cast<ABlasterHUD>(GetHUD()) : BlasterHUD;
+
+	bool bHUDValid = BlasterHUD &&
+		BlasterHUD->CharacterOverlay&&
+		BlasterHUD->CharacterOverlay->ShieldBar&&
+		BlasterHUD->CharacterOverlay->ShieldText;
+
+	if(bHUDValid)
+	{
+		const float  ShieldPercent = Shield / MaxShield;
+		BlasterHUD->CharacterOverlay->ShieldBar->SetPercent(ShieldPercent);
+		const FString ShieldText = FString::Printf(TEXT("%d/%d"), FMath::CeilToInt(Shield), FMath::CeilToInt(MaxShield));
+		BlasterHUD->CharacterOverlay->ShieldText->SetText(FText::FromString(ShieldText));
+	}
+	else
+	{
+		bInitializeShield = true;
+		HUDShield = Shield;
+		HUDMaxShield = MaxShield;
 	}
 }
 
@@ -194,7 +225,7 @@ void ABlasterPlayerController::SetHUDScore(float Score)
 	}
 	else
 	{
-		bInitialzeCharacterOverlay = true;
+		bInitializeScore = true;
 		HUDScore = Score;
 	}
 
@@ -214,9 +245,29 @@ void ABlasterPlayerController::SetHUDDefeats(int32 Defeats)
 	}
 	else
 	{
-		bInitialzeCharacterOverlay = true;
+		bInitializeDefeats = true;
 		HUDDefeats = Defeats;
 	}
+}
+
+void ABlasterPlayerController::SetHUDGrenades(int32 Grenades)
+{
+	BlasterHUD = BlasterHUD == nullptr ? Cast<ABlasterHUD>(GetHUD()) : BlasterHUD;
+	bool bHUDValid = BlasterHUD &&
+	BlasterHUD->CharacterOverlay&&
+	BlasterHUD->CharacterOverlay->GrenadesText;
+
+	if(bHUDValid)
+	{
+		const FString GrenadesTextText = FString::Printf(TEXT("%d"), Grenades);
+		BlasterHUD->CharacterOverlay->GrenadesText->SetText(FText::FromString(GrenadesTextText));
+	}
+	else
+	{
+		bInitializeGrenades = true;
+		HUDGrenades = Grenades;
+	}
+	
 }
 
 void ABlasterPlayerController::SetHUDWeaponAmmo(int32 Ammo)
@@ -316,26 +367,6 @@ void ABlasterPlayerController::SetHUDAnnouncementCountdown(float CountdownTime)
 		const FString CountdownText = FString::Printf(TEXT("%02d:%02d"), Minutes, Seconds);
 		BlasterHUD->Announcement->WarmupTime->SetText(FText::FromString(CountdownText));
 	}
-}
-
-void ABlasterPlayerController::SetHUDGrenades(int32 Grenades)
-{
-	BlasterHUD = BlasterHUD == nullptr ? Cast<ABlasterHUD>(GetHUD()) : BlasterHUD;
-	bool bHUDValid = BlasterHUD &&
-	BlasterHUD->CharacterOverlay&&
-	BlasterHUD->CharacterOverlay->GrenadesText;
-
-	if(bHUDValid)
-	{
-		const FString GrenadesTextText = FString::Printf(TEXT("%d"), Grenades);
-		BlasterHUD->CharacterOverlay->GrenadesText->SetText(FText::FromString(GrenadesTextText));
-	}
-	else
-	{
-		bInitialzeCharacterOverlay = true;
-		HUDGrenades = Grenades;
-	}
-	
 }
 
 void ABlasterPlayerController::HandleMatchHasStarted()

@@ -17,6 +17,8 @@ public:
 	virtual void BeginPlay() override;
 	virtual void Tick(float DeltaSeconds) override;
 	void SetHUDHealth(float Health, float MaxHealth);
+	void SetHUDShield(float Shield, float MaxShield);
+
 	void SetHUDScore(float Score);
 	void SetHUDDefeats(int32 Defeats);
 	void SetHUDWeaponAmmo(int32 Ammo);
@@ -81,12 +83,18 @@ private:
 	void OnRep_MatchState();
 	UPROPERTY()
 	class UCharacterOverlay* CharacterOverlay;
-	bool bInitialzeCharacterOverlay = false;
 
 	float HUDHealth;
 	float HUDMaxHealth;
+	bool bInitializeHealth = false;
+	float HUDShield;
+	float HUDMaxShield;
+	bool bInitializeShield = false;
 	float HUDScore;
+	bool bInitializeScore = false;
 	int32 HUDDefeats;
+	bool bInitializeDefeats = false;
 	int32 HUDGrenades;
+	bool bInitializeGrenades = false;
 
 };
