@@ -30,6 +30,13 @@ protected:
 		bool bFromSweep,
 		const FHitResult& SweepResult
 	);
+
+	UPROPERTY(VisibleDefaultsOnly)
+	class UNiagaraComponent* PickupEffectComp;
+		
+	UPROPERTY(EditDefaultsOnly)
+	class UNiagaraSystem* PickupEffect;
+	
 private:
 	UPROPERTY(EditDefaultsOnly, Category="pickup")
 	class USphereComponent* OverlapSphere;
