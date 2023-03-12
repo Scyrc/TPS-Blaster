@@ -17,7 +17,7 @@ APickup::APickup()
 	RootComponent = CreateDefaultSubobject<USceneComponent>(TEXT("Root"));
 	OverlapSphere = CreateDefaultSubobject<USphereComponent>(TEXT("OverlapSphere"));
 	OverlapSphere->SetupAttachment(RootComponent);
-	OverlapSphere->SetSphereRadius(150.f);
+	OverlapSphere->SetSphereRadius(100.f);
 	OverlapSphere->SetCollisionEnabled(ECollisionEnabled::QueryOnly);
 	OverlapSphere->SetCollisionResponseToAllChannels(ECollisionResponse::ECR_Ignore);
 	OverlapSphere->SetCollisionResponseToChannel(ECollisionChannel::ECC_Pawn, ECollisionResponse::ECR_Overlap);
@@ -40,10 +40,20 @@ void APickup::BeginPlay()
 {
 	Super::BeginPlay();
 
-	if(HasAuthority())  
+	if(HasAuthority())
 	{
-		OverlapSphere->OnComponentBeginOverlap.AddDynamic(this, &APickup::OnSphereOverlap);
+		GetWorldTimerManager().SetTimer(
+			BindOverlapTimer,
+			this,
+			&APickup::BindOverlapFinished,
+			BindOverlapTime
+		);
 	}
+
+}
+void APickup::BindOverlapFinished()
+{
+	OverlapSphere->OnComponentBeginOverlap.AddDynamic(this, &APickup::OnSphereOverlap);
 }
 
 void APickup::OnSphereOverlap(UPrimitiveComponent* OVerlappedComponent, AActor* OtherActor,UPrimitiveComponent* OtherComponent, int32 OtherBodyIndex, bool bFromSweep, const FHitResult& SweepResult)

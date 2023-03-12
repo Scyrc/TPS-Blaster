@@ -41,6 +41,12 @@ private:
 	UPROPERTY(EditDefaultsOnly, Category="pickup")
 	class USphereComponent* OverlapSphere;
 
+	FTimerHandle BindOverlapTimer;
+
+	float BindOverlapTime = 0.25f;
+
+	void BindOverlapFinished();
+
 	UPROPERTY(EditDefaultsOnly, Category="pickup")
 	class UStaticMeshComponent* PickupMesh;
 	

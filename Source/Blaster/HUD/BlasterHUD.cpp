@@ -22,6 +22,7 @@ void ABlasterHUD::AddCharacterOverlay()
 
 	if(PlayerController && CharacterOverlayClass)
 	{
+		
 		if(CharacterOverlay)
 		{
 			CharacterOverlay->RemoveFromParent();
