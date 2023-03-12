@@ -11,6 +11,7 @@
 #include "Blaster/HUD/BlasterHUD.h"
 #include "Blaster/HUD/CharacterOverlay.h"
 #include "Blaster/PlayerState/BlasterPlayerState.h"
+#include "Blaster/Weapon/Weapon.h"
 #include "Components/ProgressBar.h"
 #include "Components/TextBlock.h"
 #include "GameFramework/GameMode.h"
@@ -51,6 +52,9 @@ void ABlasterPlayerController::PollInit()
 			if(bInitializeShield) SetHUDShield(HUDShield, HUDMaxShield);
 			if(bInitializeScore) SetHUDScore(HUDScore);
 			if(bInitializeDefeats) SetHUDDefeats(HUDDefeats);
+			if(bInitializeCarriedAmmo) SetHUDCarriedAmmo(HUDCarriedAmmo);
+			if(bInitializeWeaponAmmo) SetHUDWeaponAmmo(HUDWeaponAmmo);
+			IsShowHUDWeaponAmmo(bInitializeShowAmmo);
 			ABlasterCharacter* BlasterCharacter = Cast<ABlasterCharacter>(GetPawn());
 			if(BlasterCharacter && BlasterCharacter->GetCombatComponent()&&bInitializeGrenades)
 			{
@@ -141,6 +145,13 @@ void ABlasterPlayerController::OnPossess(APawn* InPawn)
 		if(BlasterCharacter->GetCombatComponent())
 		{
 			SetHUDGrenades(BlasterCharacter->GetCombatComponent()->GetGrenades());
+		}
+		UCombatComponent* Combat = BlasterCharacter->GetCombatComponent();
+		if(Combat && Combat->GetEquippedWeapon())
+		{
+			Combat->GetEquippedWeapon()->IsShowHUDAmmo(true);
+			Combat->UpdateCarriedAmmo();
+			Combat->GetEquippedWeapon()->SetHUDAmmo();
 		}
 	}
 	
@@ -282,6 +293,11 @@ void ABlasterPlayerController::SetHUDWeaponAmmo(int32 Ammo)
 		const FString AmmoText = FString::Printf(TEXT("%d"), Ammo);
 		BlasterHUD->CharacterOverlay->WeaponAmmoAmount->SetText(FText::FromString(AmmoText));
 	}
+	else
+	{
+		bInitializeWeaponAmmo = true;
+		HUDWeaponAmmo = Ammo;
+	}
 }
 
 void ABlasterPlayerController::SetHUDCarriedAmmo(int32 Ammo)
@@ -295,6 +311,11 @@ void ABlasterPlayerController::SetHUDCarriedAmmo(int32 Ammo)
 	{
 		const FString AmmoText = FString::Printf(TEXT("%d"), Ammo);
 		BlasterHUD->CharacterOverlay->CarriedAmmoAmount->SetText(FText::FromString(AmmoText));
+	}
+	else
+	{
+		bInitializeCarriedAmmo = true;
+		HUDCarriedAmmo = Ammo;
 	}
 } 
 
@@ -324,6 +345,10 @@ void ABlasterPlayerController::IsShowHUDWeaponAmmo(bool bShow)
 			BlasterHUD->CharacterOverlay->AmmoText->SetVisibility(ESlateVisibility::Hidden);
 			BlasterHUD->CharacterOverlay->SlashText->SetVisibility(ESlateVisibility::Hidden);
 		}
+	}
+	else
+	{
+		bInitializeShowAmmo = bShow;
 	}
 }
 

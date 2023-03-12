@@ -32,7 +32,7 @@ public:
 	void ShowSniperScopeWidget(bool bShowScope);
 	void UpdateHUDHealth();
 	void UpdateHUDShield();
-
+	void SpawnDefaultWeapon();
 
 protected:
 
@@ -62,6 +62,10 @@ protected:
 	void PollInit();
 
 	void RotateInPlace(float DeltaTime);
+
+	void DropOrDestroyWeapon(AWeapon* Weapon);
+	void DropOrDestroyWeapon();
+
 private:
 	UPROPERTY(VisibleAnywhere, Category="Camera")
 	class USpringArmComponent* CameraBoom;
@@ -199,6 +203,12 @@ private:
 	 */
 	UPROPERTY(VisibleAnywhere)
 	UStaticMeshComponent* AttachedGrenade;
+
+	/*
+	 * Default Weapon
+	 */
+	UPROPERTY(EditDefaultsOnly)
+	TSubclassOf<AWeapon> DefaultWeapon;
 public:
 	void SetOverlappingWeapon(AWeapon* Weapon);
 	bool IsWeaponEquipped() const;

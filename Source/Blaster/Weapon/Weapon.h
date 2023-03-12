@@ -12,6 +12,8 @@ enum class EWeaponState : uint8
 {
 	EWS_Initial UMETA(DisplayName="Initial State"),
 	EWS_Equipped UMETA(DisplayName = "Equipped"),
+	EWS_EquippedSecondary UMETA(DisplayName = "Equipped Secondary"),
+
 	EWS_Dropped UMETA(DisplayName = "Dropped"),
 
 	EWS_Max UMETA(DisplayName = "DefaultMax")
@@ -58,7 +60,8 @@ public:
 	 */
 
 	void EnableCustomDepth(bool bEnable);
-	
+
+	bool bDestroyWeapon = false;
 protected:
 	UPROPERTY(EditAnywhere)
 	float ZoomedFOV = 30.f;
@@ -95,6 +98,10 @@ protected:
 		int32 OtherBodyIndex
 	);
 
+	virtual void OnWeaponStateSet();
+	virtual void OnEquipped();
+	virtual void OnEquippedSecondary();
+	virtual void OnDropped();
 	
 private:
 	UPROPERTY(VisibleAnywhere, Category="Weapon Properties")

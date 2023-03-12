@@ -21,6 +21,7 @@ public:
 	UCombatComponent();
 	friend  class ABlasterCharacter;
 	void EquipWeapon(AWeapon* WeaponToEquip);
+	void SwapWeapons();
 	virtual void GetLifetimeReplicatedProps(TArray<FLifetimeProperty>& OutLifetimeProps) const override;
 	virtual void TickComponent(float DeltaTime, ELevelTick TickType, FActorComponentTickFunction* ThisTickFunction) override;
 	UFUNCTION(BlueprintCallable)
@@ -42,7 +43,13 @@ public:
 	FORCEINLINE int32 GetGrenades() const{return Grenades;}
 
 	void PickAmmo(float AmmoAmount, EWeaponType WeaponType);
-	
+
+	void UpdateCarriedAmmo();
+
+	FORCEINLINE AWeapon* GetEquippedWeapon() const{return  EquippedWeapon;}
+
+	bool ShouldSwapWeapon();
+
 protected:
 	
 	virtual void BeginPlay() override;
@@ -51,7 +58,11 @@ protected:
 	UFUNCTION(Server, Reliable)
 	void ServerSetAiming(bool bIsAiming);
 	UFUNCTION()
-	void OnRep_EquippedWeaopn();
+	void OnRep_EquippedWeapon();
+
+	UFUNCTION()
+	void OnRep_SecondaryWeapon();
+	
 	void Fire();
 	void Reload();
 	UFUNCTION(Server, Reliable)	
@@ -82,12 +93,17 @@ protected:
 
 	void AttachActorToRightHand(AActor* ActorToAttach);
 	void AttachActorToLeftHand(AActor* ActorToAttach);
+	void AttachActorToBackpack(AActor* ActorToAttach);
 
-	void UpdateCarriedAmmo();
-	void PlayEquipWeaponSound();
+	void PlayEquipWeaponSound(AWeapon* WeaponToEquip);
+
 	void ReloadEmptyWeapon();
 
 	void ShowAttachedGrenade(bool bShow);
+
+	void EquipPrimaryWeapon(AWeapon* WeaponToEquip);
+	void EquipSecondaryWeapon(AWeapon* WeaponToEquip);
+
 private:
 	UPROPERTY()
 	ABlasterCharacter* Character;
@@ -96,8 +112,11 @@ private:
 	class ABlasterPlayerController* Controller;
 	UPROPERTY()
 	class ABlasterHUD* HUD;
-	UPROPERTY(ReplicatedUsing=OnRep_EquippedWeaopn)
+	UPROPERTY(ReplicatedUsing=OnRep_EquippedWeapon)
 	AWeapon* EquippedWeapon;
+
+	UPROPERTY(ReplicatedUsing=OnRep_SecondaryWeapon)
+	AWeapon* SecondaryWeapon;
 	
 	UPROPERTY(Replicated)
 	bool bAiming;

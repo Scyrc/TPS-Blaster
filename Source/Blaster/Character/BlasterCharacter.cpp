@@ -80,6 +80,7 @@ void ABlasterCharacter::BeginPlay()
 	if(HasAuthority())
 	{
 		OnTakeAnyDamage.AddDynamic(this, &ABlasterCharacter::ReceiveDamage);
+		SpawnDefaultWeapon();
 	}
 
 	if(AttachedGrenade)
@@ -144,6 +145,9 @@ void ABlasterCharacter:: RotateInPlace(float DeltaTime)
 		CalculateAO_Pitch();
 	}
 }
+
+
+
 void ABlasterCharacter::OnRep_ReplicatedMovement()
 {
 	Super::OnRep_ReplicatedMovement();
@@ -182,6 +186,18 @@ void ABlasterCharacter::UpdateHUDShield()
 	if(BlasterPlayerController)
 	{
 		BlasterPlayerController->SetHUDShield(CurrentShield, MaxShield);
+	}
+}
+
+void ABlasterCharacter::SpawnDefaultWeapon()
+{
+	ABlasterGameMode* BlasterGameMode = Cast<ABlasterGameMode>(UGameplayStatics::GetGameMode(this));
+	UWorld* World = GetWorld();
+	if(BlasterGameMode && World && !bElimmed && DefaultWeapon && Combat)
+	{
+		AWeapon* StartingWeapon =  World->SpawnActor<AWeapon>(DefaultWeapon);
+		StartingWeapon->bDestroyWeapon = true;
+		Combat->EquipWeapon(StartingWeapon);
 	}
 }
 
@@ -258,14 +274,7 @@ void ABlasterCharacter::EquipButtonPress()
 	if(bDisableGamePlay) return;
 	if(Combat)   
 	{
-		if(HasAuthority())
-		{
-			Combat->EquipWeapon(OverlappingWeapon);
-		}
-		else
-		{
-			ServerEquipButtonPress();
-		}
+		ServerEquipButtonPress();
 	}
 }
 
@@ -273,7 +282,14 @@ void ABlasterCharacter::ServerEquipButtonPress_Implementation()
 {
 	if(Combat)
 	{
-		Combat->EquipWeapon(OverlappingWeapon);
+		if(OverlappingWeapon)
+		{
+			Combat->EquipWeapon(OverlappingWeapon);
+		}
+		else if(Combat->ShouldSwapWeapon())
+		{
+			Combat->SwapWeapons();
+		}
 	}
 }
 
@@ -651,17 +667,41 @@ void ABlasterCharacter::PlayThrowGrenadeMontage()
 		AnimInstance->Montage_Play(ThrowGrenadeMontage);
 	}
 }
+void ABlasterCharacter::DropOrDestroyWeapon(AWeapon* Weapon)
+{
+	if(Weapon == nullptr) return;
+	if(Weapon->bDestroyWeapon)
+	{
+		Weapon->Destroy();
+	}
+	else
+	{
+		Weapon->Dropped();
+	}
+}
+
+void ABlasterCharacter::DropOrDestroyWeapon()
+{
+	if(Combat)
+	{
+		if(Combat->EquippedWeapon)
+		{
+			DropOrDestroyWeapon(Combat->EquippedWeapon);
+		}
+		if(Combat->SecondaryWeapon)
+		{
+			DropOrDestroyWeapon(Combat->SecondaryWeapon);
+		}
+	}
+}
 
 void ABlasterCharacter::Elim()
 {
 	MulticastElim();  // run on all clinets
 
 	// run on server
-
-	if(Combat && Combat->EquippedWeapon)
-	{
-		Combat->EquippedWeapon->Dropped();
-	}
+	DropOrDestroyWeapon();
+	
 
 	GetWorldTimerManager().SetTimer(
 		ElimTimer,
