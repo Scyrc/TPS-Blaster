@@ -12,6 +12,7 @@
 #include "Blaster/HUD/CharacterOverlay.h"
 #include "Blaster/PlayerState/BlasterPlayerState.h"
 #include "Blaster/Weapon/Weapon.h"
+#include "Components/Image.h"
 #include "Components/ProgressBar.h"
 #include "Components/TextBlock.h"
 #include "GameFramework/GameMode.h"
@@ -39,8 +40,41 @@ void ABlasterPlayerController::Tick(float DeltaSeconds)
 	SetHUdTime();
 	CheckTimeSync(DeltaSeconds);
 	PollInit();
+	CheckPing(DeltaSeconds);
+	
 }
+void ABlasterPlayerController::CheckPing(float DeltaTime)
+{
+	HighPingRunningTime += DeltaTime;
+	if(HighPingRunningTime > CheckPingFrequency)
+	{
+		PlayerState = PlayerState == nullptr ? GetPlayerState<ABlasterPlayerState>() : PlayerState;
+		if(PlayerState)
+		{
+			if(PlayerState->GetPing()*4 > HighPingThreshold)
+			{
+				HighPingWarning();
+				PingAnimRunningTime = 0.f;
+			}
+		}
+		HighPingRunningTime = 0.f;
+	}
 
+	bool bHighPingAnimPlaying =
+		BlasterHUD && 
+		BlasterHUD->CharacterOverlay&&
+		BlasterHUD->CharacterOverlay->HighPingAnim&&
+		BlasterHUD->CharacterOverlay->IsAnimationPlaying(BlasterHUD->CharacterOverlay->HighPingAnim);
+
+	if(bHighPingAnimPlaying)
+	{
+		PingAnimRunningTime += DeltaTime;
+		if(PingAnimRunningTime > HighPingDuration)
+		{
+			StopHighPingWarning();
+		}
+	}
+}
 void ABlasterPlayerController::PollInit()
 {
 	if(CharacterOverlay == nullptr && BlasterHUD && BlasterHUD->CharacterOverlay)
@@ -516,3 +550,40 @@ void ABlasterPlayerController::HandleMatchCooldown()
 	}
 	
 }
+
+void ABlasterPlayerController::HighPingWarning()
+{
+	BlasterHUD = BlasterHUD == nullptr ? Cast<ABlasterHUD>(GetHUD()) : BlasterHUD;
+	bool bHUDValid = BlasterHUD &&
+	BlasterHUD->CharacterOverlay&&
+	BlasterHUD->CharacterOverlay->HighPingImage&&
+	BlasterHUD->CharacterOverlay->HighPingAnim;
+
+	if(bHUDValid)
+	{
+		BlasterHUD->CharacterOverlay->HighPingImage->SetOpacity(1.f);
+		BlasterHUD->CharacterOverlay->PlayAnimation(
+			BlasterHUD->CharacterOverlay->HighPingAnim,
+			0.f,
+			5);
+	}
+}
+
+void ABlasterPlayerController::StopHighPingWarning()
+{
+	BlasterHUD = BlasterHUD == nullptr ? Cast<ABlasterHUD>(GetHUD()) : BlasterHUD;
+	bool bHUDValid = BlasterHUD &&
+	BlasterHUD->CharacterOverlay&&
+	BlasterHUD->CharacterOverlay->HighPingImage&&
+	BlasterHUD->CharacterOverlay->HighPingAnim;
+	if(bHUDValid)
+	{
+		BlasterHUD->CharacterOverlay->HighPingImage->SetOpacity(0.f);
+		if(BlasterHUD->CharacterOverlay->IsAnimationPlaying(BlasterHUD->CharacterOverlay->HighPingAnim))
+		{
+			BlasterHUD->CharacterOverlay->StopAnimation(BlasterHUD->CharacterOverlay->HighPingAnim);
+		}
+	}
+}
+
+

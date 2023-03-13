@@ -62,7 +62,12 @@ protected:
 
 	UFUNCTION(Client, Reliable)
 	void ClientJoinMidgame(FName StateOfMacth, float Match, float Warmup, float LevelStarting, float Cooldown);
-	
+
+	void HighPingWarning(); 
+	void StopHighPingWarning();
+
+	void CheckPing(float DeltaTime);
+
 private:
 	
 	UPROPERTY()
@@ -102,5 +107,16 @@ private:
 	int32 HUDWeaponAmmo;
 	bool bInitializeWeaponAmmo = false;
 	bool bInitializeShowAmmo = false;
+	
+	float HighPingRunningTime = 0.f;
+	float PingAnimRunningTime = 0.f;
 
+	UPROPERTY(EditAnywhere)
+	float HighPingDuration = 5.f;
+	
+	UPROPERTY(EditAnywhere)
+	float CheckPingFrequency = 20.f;
+
+	UPROPERTY(EditAnywhere)
+	float HighPingThreshold = 50.f;
 };

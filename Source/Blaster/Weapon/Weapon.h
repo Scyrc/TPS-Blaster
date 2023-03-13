@@ -19,6 +19,16 @@ enum class EWeaponState : uint8
 	EWS_Max UMETA(DisplayName = "DefaultMax")
 };
 
+
+UENUM(BlueprintType)
+enum class EFireType : uint8
+{
+	EFT_HitScan UMETA(DisplayName="HitScan Weapon"),
+	EFT_Projectile UMETA(DisplayName="Projectile Weapon"),
+	EFT_Shotgun UMETA(DisplayName="Shotgun Weapon"),
+	
+	EWS_Max UMETA(DisplayName = "DefaultMax")
+};
 UCLASS()
 class BLASTER_API AWeapon : public AActor
 {
@@ -62,6 +72,13 @@ public:
 	void EnableCustomDepth(bool bEnable);
 
 	bool bDestroyWeapon = false;
+
+	UPROPERTY(EditAnywhere)
+	EFireType FireType;
+
+	FORCEINLINE bool GetUseScatter() const{return bUseScatter;}
+	FVector TraceEndWithScatter(const FVector& HitTarget);
+
 protected:
 	UPROPERTY(EditAnywhere)
 	float ZoomedFOV = 30.f;
@@ -103,6 +120,15 @@ protected:
 	virtual void OnEquippedSecondary();
 	virtual void OnDropped();
 	
+
+	UPROPERTY(EditDefaultsOnly, Category="Weapon Scatter")
+	float DistanceToSphere = 800.f;
+	
+	UPROPERTY(EditDefaultsOnly, Category="Weapon Scatter")
+	float SphereRadius = 75.f;
+	
+	UPROPERTY(EditDefaultsOnly, Category="Weapon Scatter")
+	bool bUseScatter = false;
 private:
 	UPROPERTY(VisibleAnywhere, Category="Weapon Properties")
 	USkeletalMeshComponent* WeaponMesh;
