@@ -50,6 +50,8 @@ public:
 
 	bool ShouldSwapWeapon();
 
+	bool bLocallyReloading = false;
+
 protected:
 	
 	virtual void BeginPlay() override;
@@ -130,8 +132,13 @@ private:
 	UPROPERTY(ReplicatedUsing=OnRep_SecondaryWeapon)
 	AWeapon* SecondaryWeapon;
 	
-	UPROPERTY(Replicated)
+	UPROPERTY(ReplicatedUsing="OnRep_Aiming")
 	bool bAiming;
+	UFUNCTION()
+	void OnRep_Aiming();
+
+	bool bAimButtonPressed;
+	
 	UPROPERTY(EditAnywhere)
 	float BaseWalkSpeed;
 	UPROPERTY(EditAnywhere)

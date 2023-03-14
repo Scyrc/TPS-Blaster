@@ -63,12 +63,12 @@ void AWeapon::Fire(const FVector& HitTarget)
 			}
 		}
 	}
-	if(HasAuthority())
+	/*if(HasAuthority())
 	{
 		SpendRound();
-	}
+	}*/
 
-	
+	SpendRound();
 }
 
 void AWeapon::IsShowHUDAmmo(bool bShow)
@@ -105,15 +105,6 @@ void AWeapon::Dropped()
 	SetOwner(nullptr);
 	OwnerCharacter = nullptr;
 	OwnerController = nullptr;
-}
-
-void AWeapon::Reload(int32 AmmoAmount)
-{
-	if(Ammo == MagCapacity) return;
-
-	Ammo = FMath::Clamp(Ammo+AmmoAmount,Ammo, MagCapacity);
-
-	SetHUDAmmo();
 }
 
 int32 AWeapon::AmmoReloadNeeded() const
@@ -254,12 +245,63 @@ void AWeapon::OnRep_WeaponState()
 }
 
 
-// run on server
+
+
 void AWeapon::SpendRound()
 {
 	Ammo= FMath::Clamp(Ammo - 1, 0, MagCapacity);
 
 	SetHUDAmmo();
+	if(HasAuthority())
+	{
+		ClientUpdateAmmo(Ammo);
+	}
+	else
+	{
+		++Sequence;
+	}
+	
+}
+
+
+void AWeapon::ClientUpdateAmmo_Implementation(int32 ServerAmmo)
+{
+	if(HasAuthority()) return;
+	Ammo = ServerAmmo;
+	--Sequence;
+	 Ammo -= Sequence;
+	SetHUDAmmo();
+	IsShowHUDAmmo(true);
+}
+
+void AWeapon::Reload(int32 AmmoAmount)
+{
+	if(Ammo == MagCapacity) return;
+
+	Ammo = FMath::Clamp(Ammo+AmmoAmount,Ammo, MagCapacity);
+	ClientAddAmmo(AmmoAmount);
+	SetHUDAmmo();
+	 
+	OwnerCharacter = Cast<ABlasterCharacter>(GetOwner()) ;
+	if(OwnerCharacter && OwnerCharacter->GetCombatComponent() && IsAmmoFull() && WeaponType == EWeaponType::EWT_Shotgun)
+	{
+		OwnerCharacter->GetCombatComponent()->JumpToShotgunEnd();
+	}
+}
+
+void AWeapon::ClientAddAmmo_Implementation(int32 AmmoToAdd)
+{
+	if(HasAuthority()) return;
+
+	Ammo = FMath::Clamp(Ammo+AmmoToAdd,Ammo, MagCapacity);
+
+	SetHUDAmmo();
+	
+	OwnerCharacter = Cast<ABlasterCharacter>(GetOwner()) ;
+	if(OwnerCharacter && OwnerCharacter->GetCombatComponent() && IsAmmoFull() && WeaponType == EWeaponType::EWT_Shotgun)
+	{
+		OwnerCharacter->GetCombatComponent()->JumpToShotgunEnd();
+	}
 	
 }
 
@@ -290,7 +332,7 @@ int32 AWeapon::NumberOfWeaponHighLight() const
 }
 
 // run on all client
-void AWeapon::OnRep_Ammo()
+/*void AWeapon::OnRep_Ammo()
 {
 		OwnerCharacter = Cast<ABlasterCharacter>(GetOwner()) ;
 		if(OwnerCharacter)
@@ -306,7 +348,7 @@ void AWeapon::OnRep_Ammo()
 		{
 			OwnerCharacter->GetCombatComponent()->JumpToShotgunEnd();
 		}
-}
+}*/
 
 void AWeapon::Tick(float DeltaTime)
 {
@@ -318,7 +360,7 @@ void AWeapon::GetLifetimeReplicatedProps(TArray<FLifetimeProperty>& OutLifetimeP
 {
 	Super::GetLifetimeReplicatedProps(OutLifetimeProps);
 	DOREPLIFETIME(AWeapon, WeaponState);
-	DOREPLIFETIME(AWeapon, Ammo);
+	// DOREPLIFETIME(AWeapon, Ammo);
 }
 
 void AWeapon::SetHUDAmmo()

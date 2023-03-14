@@ -173,6 +173,14 @@ void UCombatComponent::EquipSecondaryWeapon(AWeapon* WeaponToEquip)
 
 }
 
+void UCombatComponent::OnRep_Aiming()
+{
+	if(Character && Character->IsLocallyControlled())
+	{
+		bAiming = bAimButtonPressed;
+	}
+}
+
 void UCombatComponent::DropEquippedWeapon()
 {
 	if(EquippedWeapon != nullptr)
@@ -377,9 +385,10 @@ void UCombatComponent::ShotgunLocalFire(const TArray<FVector_NetQuantize>& Trace
 // run on client
 void UCombatComponent::Reload()
 {
-	if(EquippedWeapon == nullptr || EquippedWeapon->IsAmmoFull() || ECombatState::ECS_Unoccupied != CombatState) return;
-
+	if(EquippedWeapon == nullptr || EquippedWeapon->IsAmmoFull() || ECombatState::ECS_Unoccupied != CombatState && !bLocallyReloading) return;
+	HandleReload();
 	ServerReload();
+	bLocallyReloading = true;
 }
 
 
@@ -440,7 +449,7 @@ void UCombatComponent::ServerReload_Implementation()
 	}
 	
 	CombatState = ECombatState::ECS_Reloading;
-	HandleReload();
+	if(!Character->IsLocallyControlled()) HandleReload();
 }
 
 void UCombatComponent::HandleReload()
@@ -455,6 +464,7 @@ void UCombatComponent::HandleReload()
 void UCombatComponent::FinishReloading()
 {
 	if(Character == nullptr) return;
+	bLocallyReloading = false;
 	if(Character->HasAuthority())
 	{
 		UpdateAmmoValues();
@@ -581,7 +591,7 @@ void UCombatComponent::OnRep_CombatState()
 	switch (CombatState)
 	{
 	case ECombatState::ECS_Reloading:
-		HandleReload();
+		if(Character && !Character->IsLocallyControlled()) HandleReload();
 		break;
 	case ECombatState::ECS_Unoccupied:
 		if(bFireButtonPressed)
@@ -630,6 +640,7 @@ void UCombatComponent::FireTimerFinished()
 bool UCombatComponent::CanFire() const
 {
     if(EquippedWeapon == nullptr) return false;
+	if(bLocallyReloading) return false;
 	if(!EquippedWeapon->IsEmpty() && bCanFire && CombatState == ECombatState::ECS_Reloading && EquippedWeapon->GetWeaponType() == EWeaponType::EWT_Shotgun) return true;
 
 	return !EquippedWeapon->IsEmpty() && bCanFire && CombatState == ECombatState::ECS_Unoccupied;
@@ -856,6 +867,8 @@ void UCombatComponent::SetAiming(bool bIsAiming)
 	{
 		Character->ShowSniperScopeWidget(bIsAiming);
 	}
+
+	if(Character->IsLocallyControlled()) bAimButtonPressed = bIsAiming;
 }
 
 void UCombatComponent::ServerSetAiming_Implementation(bool bIsAiming)
