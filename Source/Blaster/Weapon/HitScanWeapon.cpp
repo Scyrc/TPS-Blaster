@@ -52,7 +52,7 @@ void AHitScanWeapon::Fire(const FVector& HitTarget)
 				UDamageType::StaticClass()
 				);
 			}
-			if(!GetOwner()->HasAuthority() && bUseServerSideReWind)
+			if(!GetOwner()->HasAuthority() && bUseServerSideReWind && OwnerCharacter->IsLocallyControlled())
 			{
 				//UE_LOG(LogTemp, Warning, TEXT("client Called"))
 
