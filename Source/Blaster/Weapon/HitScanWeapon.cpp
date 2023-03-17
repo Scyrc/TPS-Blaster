@@ -3,7 +3,9 @@
 
 #include "HitScanWeapon.h"
 #include "WeaponTypes.h"
+#include "Blaster/BlasterComponents/LagCompensationComponent.h"
 #include "Blaster/Character/BlasterCharacter.h"
+#include "Blaster/PlayerController/BlasterPlayerController.h"
 #include "Engine/SkeletalMeshSocket.h"
 #include "Kismet/GameplayStatics.h"
 #include "Kismet/KismetMathLibrary.h"
@@ -11,16 +13,20 @@
 
 void AHitScanWeapon::Fire(const FVector& HitTarget)
 {
+	//FString TargetText = FString::Printf(TEXT("Fire Called, %s"), *HitTarget.ToString());
+	//UE_LOG(LogTemp, Warning, TEXT("%s"), *TargetText);
 	Super::Fire(HitTarget);
 
 	APawn* OwnerPawn = Cast<APawn>(GetOwner());
 	if(OwnerPawn == nullptr) return;
+	//UE_LOG(LogTemp, Warning, TEXT("OwnerPawn not null"));
 
 	AController* InstigatorController = OwnerPawn->GetController();
 	
 	const USkeletalMeshSocket* MuzzleFlashSocket = GetWeaponMesh()->GetSocketByName("MuzzleFlash");
 	if(MuzzleFlashSocket)
 	{
+		//UE_LOG(LogTemp, Warning, TEXT("MuzzleFlashSocket not null"));
 		FTransform SocketTransFrom =  MuzzleFlashSocket->GetSocketTransform(GetWeaponMesh());
 		FVector Start = SocketTransFrom.GetLocation();
 
@@ -29,15 +35,41 @@ void AHitScanWeapon::Fire(const FVector& HitTarget)
 		
 
 		ABlasterCharacter* BlasterCharacter = Cast<ABlasterCharacter>(FireHit.GetActor());
-		if(HasAuthority() && BlasterCharacter && InstigatorController)
+		OwnerCharacter = OwnerCharacter == nullptr ? Cast<ABlasterCharacter>(GetOwner()) : OwnerCharacter;
+		if(BlasterCharacter && InstigatorController)
 		{
-			UGameplayStatics::ApplyDamage(
+			//UE_LOG(LogTemp, Warning, TEXT("InstigatorController not null"));
+			bool bCauseAuthDamage = !bUseServerSideReWind || OwnerPawn->IsLocallyControlled();
+			if(GetOwner()->HasAuthority() && bCauseAuthDamage)
+			{
+				//UE_LOG(LogTemp, Warning, TEXT("server Called"))
+
+				UGameplayStatics::ApplyDamage(
 				BlasterCharacter,
 				Damage,
 				InstigatorController,
 				this,
 				UDamageType::StaticClass()
 				);
+			}
+			if(!GetOwner()->HasAuthority() && bUseServerSideReWind)
+			{
+				//UE_LOG(LogTemp, Warning, TEXT("client Called"))
+
+				OwnerCharacter = OwnerCharacter == nullptr ? Cast<ABlasterCharacter>(GetOwner()) : OwnerCharacter;
+				OwnerController = OwnerController == nullptr ? Cast<ABlasterPlayerController>(InstigatorController) : OwnerController;
+
+				if(OwnerCharacter && OwnerController && OwnerCharacter->GetLagCompensationComponent())
+				{
+					OwnerCharacter->GetLagCompensationComponent()->ServerScoreRequest(
+					BlasterCharacter,
+					Start,
+					HitTarget,
+					OwnerController->GetServerTime() - OwnerController->SingleTripTime,
+					this
+					);
+				}
+			}	
 		}
 
 		if(ParticleSystem)

@@ -90,6 +90,9 @@ public:
 
 	UPROPERTY(EditAnywhere)
 	UBoxComponent* foot_r;
+	
+	UPROPERTY()
+	TMap<FName, UBoxComponent*> HitCollisionBoxes;
 protected:
 
 	virtual void BeginPlay() override;
@@ -304,6 +307,7 @@ public:
 
 	FORCEINLINE UCombatComponent* GetCombatComponent()const {return Combat;}
 	FORCEINLINE UBuffComponent* GetBuffComponent()const {return Buff;}
+	FORCEINLINE ULagCompensationComponent* GetLagCompensationComponent()const {return LagCompensation;}
 
 	FORCEINLINE bool GetDisableGameplay() const {return bDisableGamePlay;}
 	FORCEINLINE UAnimMontage* GetReloadMontage() const {return ReloadMontage;}

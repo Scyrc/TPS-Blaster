@@ -154,6 +154,7 @@ void ABlasterPlayerController::SetHUdTime()
 void ABlasterPlayerController::ClientReportServerTime_Implementation(float TimeOfClientRequest, float TimeServerReceiveClientRequest)
 {
 	float RoundTripTime = GetWorld()->GetTimeSeconds() -  TimeOfClientRequest;
+	SingleTripTime = RoundTripTime * 0.5f; 
 	float CurrentServerTime = TimeServerReceiveClientRequest + (0.5f*RoundTripTime);
 	ClientServerDelta = CurrentServerTime - GetWorld()->GetTimeSeconds();
 	

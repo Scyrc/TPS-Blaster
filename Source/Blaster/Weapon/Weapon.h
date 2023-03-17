@@ -80,6 +80,9 @@ public:
 	FVector TraceEndWithScatter(const FVector& HitTarget);
 
 protected:
+	UPROPERTY(EditDefaultsOnly)
+	float Damage = 20.f;
+	
 	UPROPERTY(EditAnywhere)
 	float ZoomedFOV = 30.f;
 	
@@ -129,6 +132,12 @@ protected:
 	
 	UPROPERTY(EditDefaultsOnly, Category="Weapon Scatter")
 	bool bUseScatter = false;
+
+	UPROPERTY()
+	class ABlasterCharacter* OwnerCharacter;
+	UPROPERTY()
+	class ABlasterPlayerController* OwnerController;
+	
 private:
 	UPROPERTY(VisibleAnywhere, Category="Weapon Properties")
 	USkeletalMeshComponent* WeaponMesh;
@@ -176,14 +185,13 @@ private:
 	UPROPERTY(EditDefaultsOnly)
 	int32 StartingRemainAmmo= 90;
 
-	UPROPERTY()
-	class ABlasterCharacter* OwnerCharacter;
-	UPROPERTY()
-	class ABlasterPlayerController* OwnerController;
+	
 	
 	UPROPERTY(EditAnywhere)
 	EWeaponType WeaponType;
 public:
+	UPROPERTY(EditAnywhere)
+	bool bUseServerSideReWind = false;
 	FORCEINLINE float GetZoomedFOV() const{return ZoomedFOV;}
 	FORCEINLINE float GetZoomInterpSpeed() const{return ZoomInterpSpeed;}
 
@@ -197,4 +205,7 @@ public:
 
 	UPROPERTY(EditAnywhere)
 	class USoundCue* EquipSound;
+
+	FORCEINLINE float GetDamage () const {return Damage;}
+
 };

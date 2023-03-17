@@ -34,6 +34,8 @@ public:
 	void OnMatchStateSet(FName State);
 	virtual void GetLifetimeReplicatedProps(TArray< FLifetimeProperty > & OutLifetimeProps) const override;
 
+	float SingleTripTime = 0.f;
+
 protected:
 	void SetHUdTime();
 	void PollInit();
