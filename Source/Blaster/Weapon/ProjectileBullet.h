@@ -15,6 +15,14 @@ class BLASTER_API AProjectileBullet : public AProjectile
 	GENERATED_BODY()
 public:
 	AProjectileBullet();
+	virtual void BeginPlay() override;
+
+#if WITH_EDITOR
+	virtual void PostEditChangeProperty(FPropertyChangedEvent& PropertyChangedEvent) override;
+#endif
+	
+
+	
 protected:
 	virtual void OnHit(UPrimitiveComponent* HitComp, AActor* OtherActor, UPrimitiveComponent* OtherComp, FVector NormalImpulse, const FHitResult& HitResult) override;
 	
