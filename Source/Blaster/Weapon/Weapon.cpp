@@ -183,6 +183,14 @@ void AWeapon::OnEquipped()
 	if(HasAuthority())
 	{
 		AreaSphere->SetCollisionEnabled(ECollisionEnabled::NoCollision);
+		if(OwnerCharacter && bUseServerSideReWind)
+		{
+			OwnerController = OwnerController == nullptr ?  Cast<ABlasterPlayerController>(OwnerCharacter->Controller) : OwnerController ;
+			if(HasAuthority() && OwnerController && !OwnerController->HighPingDelegate.IsBound())
+			{
+				OwnerController->HighPingDelegate.AddDynamic(this, &AWeapon::OnPingTooHigh);
+			}
+		}
 	}
 	ShowPickupWidget(false);
 	WeaponMesh->SetSimulatePhysics(false);
@@ -195,6 +203,8 @@ void AWeapon::OnEquipped()
 		WeaponMesh->SetCollisionResponseToChannels(ECollisionResponse::ECR_Ignore);
 	}
 	EnableCustomDepth(false);
+	OwnerCharacter = OwnerCharacter==nullptr?  Cast<ABlasterCharacter>(GetOwner()) : OwnerCharacter;
+	
 }
 
 void AWeapon::OnEquippedSecondary()
@@ -202,6 +212,14 @@ void AWeapon::OnEquippedSecondary()
 	if(HasAuthority())
 	{
 		AreaSphere->SetCollisionEnabled(ECollisionEnabled::NoCollision);
+		if(OwnerCharacter && bUseServerSideReWind)
+		{
+			OwnerController = OwnerController == nullptr ?  Cast<ABlasterPlayerController>(OwnerCharacter->Controller) : OwnerController ;
+			if(HasAuthority() && OwnerController && OwnerController->HighPingDelegate.IsBound())
+			{
+				OwnerController->HighPingDelegate.RemoveDynamic(this, &AWeapon::OnPingTooHigh);
+			}
+		}
 	}
 	ShowPickupWidget(false);
 	WeaponMesh->SetSimulatePhysics(false);
@@ -224,6 +242,14 @@ void AWeapon::OnDropped()
 	if(HasAuthority())
 	{
 		AreaSphere->SetCollisionEnabled(ECollisionEnabled::QueryOnly);
+		if(OwnerCharacter && bUseServerSideReWind)
+		{
+			OwnerController = OwnerController == nullptr ?  Cast<ABlasterPlayerController>(OwnerCharacter->Controller) : OwnerController ;
+			if(HasAuthority() && OwnerController && OwnerController->HighPingDelegate.IsBound())
+			{
+				OwnerController->HighPingDelegate.RemoveDynamic(this, &AWeapon::OnPingTooHigh);
+			}
+		}
 	}
 	WeaponMesh->SetCollisionEnabled(ECollisionEnabled::QueryAndPhysics);
 	WeaponMesh->SetSimulatePhysics(true);
@@ -236,6 +262,12 @@ void AWeapon::OnDropped()
 	WeaponMesh->SetCustomDepthStencilValue(NumberOfWeaponHighLight());
 	WeaponMesh->MarkRenderStateDirty();
 	EnableCustomDepth(true);
+}
+
+
+void AWeapon::OnPingTooHigh(bool bPingTooHigh)
+{
+	bUseServerSideReWind = !bPingTooHigh;
 }
 
 // run on client
@@ -360,6 +392,7 @@ void AWeapon::GetLifetimeReplicatedProps(TArray<FLifetimeProperty>& OutLifetimeP
 {
 	Super::GetLifetimeReplicatedProps(OutLifetimeProps);
 	DOREPLIFETIME(AWeapon, WeaponState);
+	DOREPLIFETIME_CONDITION(AWeapon, bUseServerSideReWind, COND_OwnerOnly);
 	// DOREPLIFETIME(AWeapon, Ammo);
 }
 

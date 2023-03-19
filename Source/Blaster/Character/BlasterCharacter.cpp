@@ -56,6 +56,8 @@ ABlasterCharacter::ABlasterCharacter()
 	GetCharacterMovement()->RotationRate = FRotator(0.f, 0.f, 850.f);
 
 	GetCapsuleComponent()->SetCollisionResponseToChannel(ECollisionChannel::ECC_Camera, ECollisionResponse::ECR_Ignore);
+	GetCapsuleComponent()->SetCollisionResponseToChannel(ECC_HitBox, ECollisionResponse::ECR_Ignore);
+
 	GetMesh()->SetCollisionObjectType(ECC_SkeletalMesh);
 	GetMesh()->SetCollisionResponseToChannel(ECollisionChannel::ECC_Camera, ECollisionResponse::ECR_Ignore);
 	GetMesh()->SetCollisionResponseToChannel(ECollisionChannel::ECC_Visibility, ECollisionResponse::ECR_Block);
@@ -71,39 +73,7 @@ ABlasterCharacter::ABlasterCharacter()
 	AttachedGrenade->SetupAttachment(GetMesh(), FName("GrenadeSocket"));
 	AttachedGrenade->SetCollisionEnabled(ECollisionEnabled::NoCollision);
 
-	/*
-	 * Hit boxes for server-side rewind
-	 */
-	/*TArray<UBoxComponent*> boneBox (
-		{head,
-			pelvis,
-			spine_02,spine_03,
-			upperarm_l,upperarm_r,
-			lowerarm_l,lowerarm_r,
-			hand_l,hand_r,
-			backpack,blanket,
-			thigh_l,thigh_r,
-			calf_l,calf_r,
-			foot_l,foot_r});
-	TArray<FString> boneBoxName (
-		{"head",
-			"pelvis",
-			"spine_02","spine_03",
-			"upperarm_l","upperarm_r",
-			"lowerarm_l","lowerarm_r",
-			"hand_l","hand_r",
-			"backpack","blanket",
-			"thigh_l","thigh_r",
-			"calf_l","calf_r",
-			"foot_l","foot_r"});
-	int32 i = 0;
-	for(auto& box : boneBox)
-	{
-		box = CreateDefaultSubobject<UBoxComponent>(*boneBoxName[i]);
-		box->SetupAttachment(GetMesh(), FName(boneBoxName[i]));
-		box->SetCollisionEnabled(ECollisionEnabled::NoCollision);
-		++i;
-	}*/
+	
 	head = CreateDefaultSubobject<UBoxComponent>(TEXT("head"));
 	head->SetupAttachment(GetMesh(), FName("head"));
 	HitCollisionBoxes.Add(	FName("head"), head);

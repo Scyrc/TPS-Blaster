@@ -137,6 +137,9 @@ protected:
 	class ABlasterCharacter* OwnerCharacter;
 	UPROPERTY()
 	class ABlasterPlayerController* OwnerController;
+
+	UFUNCTION()
+	void OnPingTooHigh(bool bPingTooHigh);
 	
 private:
 	UPROPERTY(VisibleAnywhere, Category="Weapon Properties")
@@ -190,7 +193,7 @@ private:
 	UPROPERTY(EditAnywhere)
 	EWeaponType WeaponType;
 public:
-	UPROPERTY(EditAnywhere)
+	UPROPERTY(Replicated, EditAnywhere)
 	bool bUseServerSideReWind = false;
 	FORCEINLINE float GetZoomedFOV() const{return ZoomedFOV;}
 	FORCEINLINE float GetZoomInterpSpeed() const{return ZoomInterpSpeed;}

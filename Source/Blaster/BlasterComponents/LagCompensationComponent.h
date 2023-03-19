@@ -72,12 +72,22 @@ public:
 	friend class ABlasterCharacter;
 	virtual void TickComponent(float DeltaTime, ELevelTick TickType, FActorComponentTickFunction* ThisTickFunction) override;
 	void ShowFramePackage(const FFramePackage& Package, const FColor& Color);
+
+	/*
+	 * Hitscan
+	 */
 	FServerSideRewindResult ServerSideRewind(
 		class ABlasterCharacter* HitCharacter,
 		const FVector_NetQuantize& TraceStart,
 		const FVector_NetQuantize& HitLocation,
 		float HitTime);
-		
+
+	FServerSideRewindResult ProjectileServerSideRewind(
+		ABlasterCharacter* HitCharacter,
+		const FVector_NetQuantize& TraceStart,
+		const FVector_NetQuantize100& InitialVelocity,
+		float HitTime
+		);
 	/*
 	 * Shotgun 
 	 */
@@ -96,6 +106,14 @@ public:
 		const FVector_NetQuantize& HitLocation,
 		float HitTime,
 		class AWeapon* DamageCauser
+	);
+	
+	UFUNCTION(Server, Reliable)
+	void ServerProjectileScoreRequest(
+		ABlasterCharacter* HitCharacter,
+		const FVector_NetQuantize& TraceStart,
+		const FVector_NetQuantize100& InitialVelocity,
+		float HitTime
 	);
 
 	UFUNCTION(Server, Reliable)
@@ -117,6 +135,13 @@ protected:
 		const FVector_NetQuantize& TraceStart,
 		const FVector_NetQuantize& HitLocation);
 
+	FServerSideRewindResult ProjectileConfirmHit(
+		const FFramePackage& Package,
+		ABlasterCharacter* HitCharacter,
+		const FVector_NetQuantize& TraceStart,
+		const FVector_NetQuantize100& InitialVelocity,
+		float HitTime);
+	
 	FShotgunServerSideRewindResult ShotgunConfirmHit(
 		const TArray<FFramePackage>& FramePackages,
 		const FVector_NetQuantize& TraceStart,
