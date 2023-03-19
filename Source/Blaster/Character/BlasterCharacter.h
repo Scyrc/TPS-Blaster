@@ -178,6 +178,9 @@ private:
 
 	UPROPERTY(EditAnywhere, Category="Combat")
 	UAnimMontage* ThrowGrenadeMontage;
+
+	UPROPERTY(EditAnywhere, Category="Combat")
+	UAnimMontage* SwapMontage;
 	
 	void HideCameraIfCharacterClose();
 	
@@ -283,6 +286,7 @@ public:
 	void PlayReloadMontage();
 	void PlayElimMontage();
 	void PlayThrowGrenadeMontage();
+	void PlaySwapMontage();
 
 	FVector GetHitTarget() const;
 	FORCEINLINE UCameraComponent* GetFollowCamera() const {return FollowCamera;}
@@ -314,4 +318,5 @@ public:
 	FORCEINLINE UStaticMeshComponent* GetAttachedGrenade() const {return AttachedGrenade;}
 	bool IsLocallyReloading() const ;
 
+	bool bFinishedSwapping = false;
 };

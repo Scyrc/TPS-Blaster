@@ -3,6 +3,7 @@
 
 #include "BlasterAnimInstance.h"
 #include "BlasterCharacter.h"
+#include "Blaster/BlasterComponents/CombatComponent.h"
 #include "Blaster/Weapon/Weapon.h"
 #include "GameFramework/CharacterMovementComponent.h"
 #include "Kismet/KismetMathLibrary.h"
@@ -86,7 +87,10 @@ void UBlasterAnimInstance::NativeUpdateAnimation(float DeltaTime)
 	}
 
 	bUseFABRIK = BlasterCharcter->GetCombatState() == ECombatState::ECS_Unoccupied;
-	if(BlasterCharcter->IsLocallyControlled() && BlasterCharcter->GetCombatState() != ECombatState::ECS_ThrowingGrenade)
+	bool bFABRIKOverride = BlasterCharcter->IsLocallyControlled() &&
+		BlasterCharcter->GetCombatState() != ECombatState::ECS_SwappingWeapons&&
+		BlasterCharcter->bFinishedSwapping;
+	if(bFABRIKOverride)
 	{
 		bUseFABRIK = !BlasterCharcter->IsLocallyReloading();
 	}
