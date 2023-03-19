@@ -39,6 +39,8 @@ public:
 	float SingleTripTime = 0.f;
 	FHighPingDelegate HighPingDelegate;
 protected:
+	virtual void SetupInputComponent() override;
+
 	void SetHUdTime();
 	void PollInit();
 	/*
@@ -72,7 +74,19 @@ protected:
 
 	void CheckPing(float DeltaTime);
 
+	void ShowReturnToMainMenu();
+
 private:
+	/*
+	 * Return to main menu
+	 */
+	UPROPERTY(EditAnywhere, Category="HUD")
+	TSubclassOf<class UUserWidget> ReturnWidgetClass;
+	
+	UPROPERTY()
+	class UReturnWidget* ReturnWidget;
+
+	bool bReturnToMainMenuOpen = false;
 	
 	UPROPERTY()
 	class ABlasterGameMode* BlasterGameMode;

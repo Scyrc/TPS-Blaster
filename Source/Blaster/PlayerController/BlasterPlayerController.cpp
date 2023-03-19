@@ -10,6 +10,7 @@
 #include "Blaster/HUD/Announcement.h"
 #include "Blaster/HUD/BlasterHUD.h"
 #include "Blaster/HUD/CharacterOverlay.h"
+#include "Blaster/HUD/ReturnWidget.h"
 #include "Blaster/PlayerState/BlasterPlayerState.h"
 #include "Blaster/Weapon/Weapon.h"
 #include "Components/Image.h"
@@ -18,6 +19,15 @@
 #include "GameFramework/GameMode.h"
 #include "Kismet/GameplayStatics.h"
 #include "Net/UnrealNetwork.h"
+
+void ABlasterPlayerController::SetupInputComponent()
+{
+	Super::SetupInputComponent();
+	if(InputComponent == nullptr) return;
+
+
+	InputComponent->BindAction("Quit",IE_Pressed, this, &ABlasterPlayerController::ShowReturnToMainMenu);
+}
 
 void ABlasterPlayerController::BeginPlay()
 {
@@ -78,6 +88,30 @@ void ABlasterPlayerController::CheckPing(float DeltaTime)
 		if(PingAnimRunningTime > HighPingDuration)
 		{
 			StopHighPingWarning();
+		}
+	}
+}
+
+void ABlasterPlayerController::ShowReturnToMainMenu()
+{
+	// show the
+
+	if(ReturnWidgetClass == nullptr) return;
+
+	if(ReturnWidget == nullptr)
+	{
+		ReturnWidget = CreateWidget<UReturnWidget>(this, ReturnWidgetClass);
+	}
+	if(ReturnWidget)
+	{
+		bReturnToMainMenuOpen = !bReturnToMainMenuOpen;
+		if(bReturnToMainMenuOpen)
+		{
+			ReturnWidget->MenuSetup();
+		}
+		else
+		{
+			ReturnWidget->MenuTearDown();
 		}
 	}
 }

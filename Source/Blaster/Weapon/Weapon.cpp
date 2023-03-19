@@ -123,10 +123,10 @@ void AWeapon::BeginPlay()
 		PickupWidget->SetVisibility(false);
 	}
 
-	if(!HasAuthority())
+	/*if(!HasAuthority())
 	{
 		FireDelay = 0.001;
-	}
+	}*/
 	
 	AreaSphere->SetCollisionEnabled(ECollisionEnabled::QueryAndPhysics);
 	AreaSphere->SetCollisionResponseToChannel(ECollisionChannel::ECC_Pawn,ECollisionResponse::ECR_Overlap);
