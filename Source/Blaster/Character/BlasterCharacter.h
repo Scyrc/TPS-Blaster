@@ -12,6 +12,8 @@
 
 #include "BlasterCharacter.generated.h"
 
+DECLARE_DYNAMIC_MULTICAST_DELEGATE(FOnLeftGame);
+
 UCLASS()
 class BLASTER_API ABlasterCharacter : public ACharacter, public IInteractWithCrosshairsInterface
 {
@@ -93,6 +95,18 @@ public:
 	
 	UPROPERTY()
 	TMap<FName, UBoxComponent*> HitCollisionBoxes;
+
+	UFUNCTION(Server, Reliable)
+	void ServerLeaveGame();
+
+	FOnLeftGame OnLeftGame;
+
+	UFUNCTION(NetMulticast, Reliable)
+	void MulticastGainedTheLead();
+	
+	UFUNCTION(NetMulticast, Reliable)
+	void MulticastLostTheLead();
+
 protected:
 
 	virtual void BeginPlay() override;
@@ -219,15 +233,6 @@ private:
 	UPROPERTY()
 	class ABlasterPlayerController* BlasterPlayerController;
 
-	bool bElimmed = false;
-
-	FTimerHandle ElimTimer;
-
-	void ElimTimerFinished();
-
-	UPROPERTY(EditDefaultsOnly)
-	float ElimDelay = 3.f;
-
 	/*
 	 * Dissolve Effect
 	 */
@@ -263,6 +268,23 @@ private:
 	UPROPERTY()
 	class ABlasterPlayerState* BlasterPlayerState;
 
+	bool bElimmed = false;
+
+	FTimerHandle ElimTimer;
+
+	void ElimTimerFinished();
+
+	UPROPERTY(EditDefaultsOnly)
+	float ElimDelay = 3.f;
+
+	bool bLeftGame = false;
+
+	UPROPERTY(EditAnywhere)
+	class UNiagaraSystem* CrownSystem;
+
+	UPROPERTY()
+	class UNiagaraComponent* CrownComponent;
+	
 	/*
 	 * Grenade
 	 */
@@ -294,10 +316,10 @@ public:
 	FORCEINLINE bool ShouldRotateRootBone() const{ return  bRotateRootBone;}
 
 	UFUNCTION(NetMulticast, Reliable)
-	void MulticastElim();
+	void MulticastElim(bool PlayLeftGame);
 
 	FORCEINLINE bool IsElimmed() const{ return  bElimmed;}
-	void Elim();
+	void Elim(bool PlayLeftGame);
 
 	FORCEINLINE float GetHealth()const{return  CurrentHealth;}
 	FORCEINLINE void SetHealth(float Amount){CurrentHealth = Amount;}
