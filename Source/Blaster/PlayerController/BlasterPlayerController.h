@@ -4,6 +4,7 @@
 
 #include "CoreMinimal.h"
 #include "GameFramework/PlayerController.h"
+#include "GameFramework/PlayerState.h"
 #include "BlasterPlayerController.generated.h"
 
 
@@ -38,7 +39,12 @@ public:
 
 	float SingleTripTime = 0.f;
 	FHighPingDelegate HighPingDelegate;
+
+	void BroadcastElim(APlayerState* Attacker, APlayerState* Victim);
 protected:
+	UFUNCTION(Client, Reliable)
+	void ClientElimAnnouncement(APlayerState* Attacker, APlayerState* Victim);
+
 	virtual void SetupInputComponent() override;
 
 	void SetHUdTime();

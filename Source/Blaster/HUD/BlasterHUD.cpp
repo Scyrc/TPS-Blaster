@@ -6,8 +6,10 @@
 #include "Announcement.h"
 #include "GameFramework/PlayerController.h"
 #include "CharacterOverlay.h"
-
-
+#include "ElimAnnouncement.h"
+#include "Blueprint/WidgetLayoutLibrary.h"
+#include "Components/CanvasPanelSlot.h"
+#include "Components/HorizontalBox.h"
 
 
 void ABlasterHUD::BeginPlay()
@@ -35,15 +37,70 @@ void ABlasterHUD::AddCharacterOverlay()
 }
 void ABlasterHUD::AddAnnouncement()
 {
-	const APlayerController* PlayerController = GetOwningPlayerController();
+	OwningPlayerController = OwningPlayerController == nullptr ? GetOwningPlayerController() : OwningPlayerController;
 
-	if(PlayerController && AnnouncementClass)
+
+	if(OwningPlayerController && AnnouncementClass)
 	{
 		Announcement = CreateWidget<UAnnouncement>(GetWorld(), AnnouncementClass);
 		Announcement->AddToViewport();
 	}
 
 }
+
+void ABlasterHUD::AddElimAnnouncement(FString Attacker, FString Victim)
+{
+	OwningPlayerController = OwningPlayerController == nullptr ? GetOwningPlayerController() : OwningPlayerController;
+
+	if(OwningPlayerController && ElimAnnouncementClass)
+	{
+		ElimAnnouncement = CreateWidget<UElimAnnouncement>(GetWorld(), ElimAnnouncementClass);
+		if(ElimAnnouncement)
+		{
+			ElimAnnouncement->SetElimAnnouncementText(Attacker, Victim);
+			ElimAnnouncement->AddToViewport();
+
+			for(UElimAnnouncement* Msg : ElimMessage)
+			{
+				if(Msg && Msg->AnnouncementBox)
+				{
+					UCanvasPanelSlot* CanvasPanelSlot = UWidgetLayoutLibrary::SlotAsCanvasSlot(Msg->AnnouncementBox);
+					if(CanvasPanelSlot)
+					{
+						const FVector2D Position = CanvasPanelSlot->GetPosition();
+						FVector2D NewPosition(
+							Position.X,
+							Position.Y - CanvasPanelSlot->GetSize().Y
+						);
+						CanvasPanelSlot->SetPosition(NewPosition);
+					}
+				}
+			}
+			
+			ElimMessage.Add(ElimAnnouncement);
+			FTimerHandle ElimMsgTimer;
+			FTimerDelegate TimerDelegate;
+			TimerDelegate.BindUFunction(this, FName("ElimAnnouncementTimerFinished"), ElimAnnouncement);
+
+			GetWorldTimerManager().SetTimer(
+				ElimMsgTimer,
+				TimerDelegate,
+				ElimAnnouncementTime,
+				false);
+		}
+
+	
+	}
+}
+
+void ABlasterHUD::ElimAnnouncementTimerFinished(UElimAnnouncement* MsgToRemove)
+{
+	if(MsgToRemove)
+	{
+		MsgToRemove->RemoveFromParent();
+	}
+}
+
 void ABlasterHUD::DrawHUD()
 {
 	Super::DrawHUD();
@@ -109,3 +166,5 @@ void ABlasterHUD::DrawCrosshair(UTexture2D* Texture, FVector2D ViewportCenter, F
 		);
 
 }
+
+
