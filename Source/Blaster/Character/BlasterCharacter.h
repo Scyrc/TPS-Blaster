@@ -4,6 +4,7 @@
 
 #include "CoreMinimal.h"
 #include "Blaster/BlasterTypes/CombatState.h"
+#include "Blaster/BlasterTypes/Team.h"
 #include "Blaster/BlasterTypes/TurningInPlace.h"
 #include "Blaster/Interfaces/InteractWithCrosshairsInterface.h"
 #include "Components/TimelineComponent.h"
@@ -106,7 +107,7 @@ public:
 	
 	UFUNCTION(NetMulticast, Reliable)
 	void MulticastLostTheLead();
-
+	void SetTeamColor(ETeam Team);
 protected:
 
 	virtual void BeginPlay() override;
@@ -250,9 +251,27 @@ private:
 	UPROPERTY(VisibleAnywhere, Category="Elim")
 	UMaterialInstanceDynamic* DynamicDissolveMaterialInstance;
 
-	UPROPERTY(EditAnywhere, Category="Elim")	
+	UPROPERTY(VisibleAnywhere, Category="Elim")	
 	UMaterialInstance* DissolveMaterialInstance;
 
+	/*
+	 * Team color
+	 */
+
+	UPROPERTY(EditAnywhere, Category="Elim")	
+	UMaterialInstance* RedDissolveMaterialInstance;
+
+	UPROPERTY(EditAnywhere, Category="Elim")	
+	UMaterialInstance* RedMaterialInstance;
+	
+	UPROPERTY(EditAnywhere, Category="Elim")	
+	UMaterialInstance* BlueDissolveMaterialInstance;
+
+	UPROPERTY(EditAnywhere, Category="Elim")	
+	UMaterialInstance* BlueMaterialInstance;
+
+	UPROPERTY(EditAnywhere, Category="Elim")	
+	UMaterialInstance* OriginalMaterialInstance;
 	/*
 	 * Elim Bot
 	 */
@@ -296,6 +315,8 @@ private:
 	 */
 	UPROPERTY(EditDefaultsOnly)
 	TSubclassOf<AWeapon> DefaultWeapon;
+	UPROPERTY()
+	class ABlasterGameMode* BlasterGameMode;
 public:
 	void SetOverlappingWeapon(AWeapon* Weapon);
 	bool IsWeaponEquipped() const;

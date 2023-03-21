@@ -3,6 +3,7 @@
 #pragma once
 
 #include "CoreMinimal.h"
+#include "Blaster/BlasterTypes/Team.h"
 #include "GameFramework/PlayerState.h"
 #include "BlasterPlayerState.generated.h"
 
@@ -21,7 +22,7 @@ public:
 
 	void AddToScore(float ScoreAmount);
 	void AddToDefeats(int32 DefeatsAmount);
-
+	
 private:
 	UPROPERTY()
 	class ABlasterCharacter* Character;
@@ -30,4 +31,13 @@ private:
 
 	UPROPERTY(ReplicatedUsing = Onrep_Defeats)
 	int32 Defeats;
+
+	UPROPERTY(ReplicatedUsing=OnRep_Team)
+	ETeam Team = ETeam::ET_NoTeam;
+	UFUNCTION()
+	void OnRep_Team();
+
+public:
+	FORCEINLINE ETeam GetTeam()const{return Team;}
+	void SetTeam(ETeam TeamToSet);
 };

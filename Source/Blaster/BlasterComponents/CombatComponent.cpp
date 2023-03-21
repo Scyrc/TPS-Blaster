@@ -376,9 +376,7 @@ void UCombatComponent::Reload()
 {
 	if(EquippedWeapon == nullptr ||
 		EquippedWeapon->IsAmmoFull() ||
-		ECombatState::ECS_Unoccupied != CombatState && !bLocallyReloading||
-		!CarriedAmmoMap.Contains(EquippedWeapon->GetWeaponType())||
-		CarriedAmmoMap[EquippedWeapon->GetWeaponType()] <=0) return;
+		ECombatState::ECS_Unoccupied != CombatState && !bLocallyReloading || CarriedAmmo<=0) return;
 	HandleReload();
 	ServerReload();
 	bLocallyReloading = true;
