@@ -43,10 +43,10 @@ void AHitScanWeapon::Fire(const FVector& HitTarget)
 			if(GetOwner()->HasAuthority() && bCauseAuthDamage)
 			{
 				//UE_LOG(LogTemp, Warning, TEXT("server Called"))
-
+				const float DamageToCause = FireHit.BoneName.ToString() == FString("head") ? HeadShotDamage : Damage;
 				UGameplayStatics::ApplyDamage(
 				BlasterCharacter,
-				Damage,
+				DamageToCause,
 				InstigatorController,
 				this,
 				UDamageType::StaticClass()
@@ -65,8 +65,7 @@ void AHitScanWeapon::Fire(const FVector& HitTarget)
 					BlasterCharacter,
 					Start,
 					HitTarget,
-					OwnerController->GetServerTime() - OwnerController->SingleTripTime,
-					this
+					OwnerController->GetServerTime() - OwnerController->SingleTripTime
 					);
 				}
 			}	
@@ -89,8 +88,6 @@ void AHitScanWeapon::Fire(const FVector& HitTarget)
 				FireHit.ImpactPoint
 			);
 		}
-		
-
 		if(MuzzleFlash)
 		{
 			UGameplayStatics::SpawnEmitterAtLocation(
@@ -129,6 +126,10 @@ void AHitScanWeapon::WeaponTraceHit(const FVector& TraceStart, const FVector& Hi
 		if(OutHit.bBlockingHit)
 		{
 			BeamEnd = OutHit.ImpactPoint;
+		}
+		else
+		{
+			OutHit.ImpactPoint = End;
 		}
 
 		// DrawDebugSphere(GetWorld(), BeamEnd, 4.f, 12, FColor::Purple, true);

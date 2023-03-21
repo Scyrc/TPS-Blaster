@@ -40,14 +40,18 @@ void AShotgun::FireShotgun(const TArray<FVector_NetQuantize>& HitTargets)
 		ABlasterCharacter* BlasterCharacter = Cast<ABlasterCharacter>(FireHit.GetActor());
 		if(BlasterCharacter)
 		{
-			if(HitMap.Contains(BlasterCharacter))
+			const bool bHeadShot = FireHit.BoneName.ToString() == FString("head");
+			if(bHeadShot)
 			{
-				HitMap[BlasterCharacter] += 1;
+				if(HeadShotHitMap.Contains(BlasterCharacter)) HeadShotHitMap[BlasterCharacter] += 1;
+				else HeadShotHitMap.Emplace(BlasterCharacter, 1);
 			}
 			else
 			{
-				HitMap.Emplace(BlasterCharacter, 1);
+				if(HitMap.Contains(BlasterCharacter)) HitMap[BlasterCharacter] += 1;
+				else HitMap.Emplace(BlasterCharacter, 1);
 			}
+		
 		}
 
 		if(ParticleSystem)
@@ -90,7 +94,7 @@ void AShotgun::FireShotgun(const TArray<FVector_NetQuantize>& HitTargets)
 	}
 
 	// Calculate head shot damage by multiplying times hit x HeadShotDamage - store in DamageMap
-	/*for (auto HeadShotHitPair : HeadShotHitMap)
+	for (auto HeadShotHitPair : HeadShotHitMap)
 	{
 		if (HeadShotHitPair.Key)
 		{
@@ -99,7 +103,7 @@ void AShotgun::FireShotgun(const TArray<FVector_NetQuantize>& HitTargets)
 
 			HitCharacters.AddUnique(HeadShotHitPair.Key);
 		}
-	}*/
+	}
 
 	// Loop through DamageMap to get total damage for each character
 	for (auto DamagePair : DamageMap)

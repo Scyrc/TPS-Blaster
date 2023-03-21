@@ -82,6 +82,9 @@ public:
 protected:
 	UPROPERTY(EditDefaultsOnly)
 	float Damage = 20.f;
+
+	UPROPERTY(EditDefaultsOnly)
+	float HeadShotDamage = 100.f;
 	
 	UPROPERTY(EditAnywhere)
 	float ZoomedFOV = 30.f;
@@ -210,5 +213,6 @@ public:
 	class USoundCue* EquipSound;
 
 	FORCEINLINE float GetDamage () const {return Damage;}
+	FORCEINLINE float GetHeadShotDamage () const {return HeadShotDamage;}
 
 };

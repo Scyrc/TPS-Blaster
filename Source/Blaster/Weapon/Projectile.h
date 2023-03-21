@@ -27,9 +27,12 @@ public:
 	UPROPERTY(EditAnywhere)
 	float InitialSpeed = 15000.f;
 	
-	//UPROPERTY(EditAnywhere)
+	UPROPERTY(EditAnywhere)
 	float Damage = 20.f;
 	
+	UPROPERTY(EditAnywhere)
+	float HeadShotDamage = 100.f;
+
 protected:
 	virtual void BeginPlay() override;
 	void DestroyTimerFinished();

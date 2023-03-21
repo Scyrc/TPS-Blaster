@@ -364,6 +364,7 @@ void UCombatComponent::ShotgunLocalFire(const TArray<FVector_NetQuantize>& Trace
 	if(Character == nullptr || Shotgun == nullptr) return;
 	if(CombatState == ECombatState::ECS_Reloading ||  CombatState == ECombatState::ECS_Unoccupied)
 	{
+		bLocallyReloading = false;
 		Character->PlayFireMontage(bAiming);
 		Shotgun->FireShotgun(TraceHitTarget);
 		CombatState = ECombatState::ECS_Unoccupied;
@@ -373,7 +374,11 @@ void UCombatComponent::ShotgunLocalFire(const TArray<FVector_NetQuantize>& Trace
 // run on client
 void UCombatComponent::Reload()
 {
-	if(EquippedWeapon == nullptr || EquippedWeapon->IsAmmoFull() || ECombatState::ECS_Unoccupied != CombatState && !bLocallyReloading) return;
+	if(EquippedWeapon == nullptr ||
+		EquippedWeapon->IsAmmoFull() ||
+		ECombatState::ECS_Unoccupied != CombatState && !bLocallyReloading||
+		!CarriedAmmoMap.Contains(EquippedWeapon->GetWeaponType())||
+		CarriedAmmoMap[EquippedWeapon->GetWeaponType()] <=0) return;
 	HandleReload();
 	ServerReload();
 	bLocallyReloading = true;
