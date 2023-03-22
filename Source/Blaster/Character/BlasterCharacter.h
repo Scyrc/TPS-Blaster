@@ -139,6 +139,8 @@ protected:
 
 	void DropOrDestroyWeapon(AWeapon* Weapon);
 	void DropOrDestroyWeapon();
+	void SetSpawnPoint();
+	void OnPlayerStateInitialized();
 
 private:
 	UPROPERTY(VisibleAnywhere, Category="Camera")
@@ -364,4 +366,8 @@ public:
 	bool bFinishedSwapping = false;
 	bool IsHoldingTheFlag() const;
 	ETeam GetTeam();
+	void SetHoldingTheFlag(bool bHolding);
+
+	void RemoveFlag();
+
 };

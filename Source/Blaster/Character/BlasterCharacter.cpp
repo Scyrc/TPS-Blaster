@@ -6,6 +6,7 @@
 #include "NiagaraComponent.h"
 #include "NiagaraEffectType.h"
 #include "NiagaraFunctionLibrary.h"
+#include "ThumbnailExternalCache.h"
 #include "Blaster/Blaster.h"
 #include "Blaster/BlasterComponents/BuffComponent.h"
 #include "Blaster/BlasterComponents/CombatComponent.h"
@@ -13,6 +14,7 @@
 #include "Blaster/GameMode/BlasterGameMode.h"
 #include "Blaster/GameState/BlasterGameState.h"
 #include "Blaster/PlayerController/BlasterPlayerController.h"
+#include "Blaster/PlayerStart/TeamPlayerStart.h"
 #include "Blaster/PlayerState/BlasterPlayerState.h"
 #include "GameFramework/SpringArmComponent.h"
 #include "Camera/CameraComponent.h"
@@ -284,6 +286,12 @@ void ABlasterCharacter:: RotateInPlace(float DeltaTime)
 		TurningInPlace = ETurningInPlace::ETIP_NotTuring;
 		return;
 	}
+	if(Combat && Combat->EquippedWeapon)
+	{
+		GetCharacterMovement()->bOrientRotationToMovement = false;
+		bUseControllerRotationYaw = true;
+	}
+
 	if(bDisableGamePlay)
 	{
 		bUseControllerRotationYaw = false;
@@ -369,21 +377,23 @@ void ABlasterCharacter::PollInit()
 		BlasterPlayerState = Cast<ABlasterPlayerState>(GetPlayerState());
 		if(BlasterPlayerState)
 		{
-			BlasterPlayerState->AddToScore(0.f);
-			BlasterPlayerState->AddToDefeats(0);
-			SetTeamColor(BlasterPlayerState->GetTeam());
+			OnPlayerStateInitialized();
+			
+			ABlasterGameState* GameState = Cast<ABlasterGameState>(UGameplayStatics::GetGameState(this));
+			if(GameState && GameState->TopScoringPlayers.Contains(BlasterPlayerState))
+			{
+				MulticastGainedTheLead();
+			}
 		}
 	}
+}
 
-	
-	ABlasterGameState* GameState = Cast<ABlasterGameState>(UGameplayStatics::GetGameState(this));
-	if(GameState)
-	{
-		if(GameState->TopScoringPlayers.Contains(BlasterPlayerState))
-		{
-			MulticastGainedTheLead();
-		}
-	}
+void ABlasterCharacter::OnPlayerStateInitialized()
+{
+	BlasterPlayerState->AddToScore(0.f);
+	BlasterPlayerState->AddToDefeats(0);
+	SetTeamColor(BlasterPlayerState->GetTeam());
+	SetSpawnPoint();
 }
 
 void ABlasterCharacter::HideCameraIfCharacterClose()
@@ -810,7 +820,7 @@ ETeam ABlasterCharacter::GetTeam()
 		return BlasterPlayerState->GetTeam();
 	}
 	return ETeam::ET_NoTeam;
-}	
+}
 
 void ABlasterCharacter::PlayFireMontage(bool bAiming)
 {
@@ -932,10 +942,38 @@ void ABlasterCharacter::DropOrDestroyWeapon()
 		{
 			DropOrDestroyWeapon(Combat->SecondaryWeapon);
 		}
-		if (Combat->TheFlag)
+		if (Combat->bHoldingTheFlag && Combat->TheFlag)
 		{
 			Combat->TheFlag->Dropped();
 		}
+	}
+}
+
+void ABlasterCharacter::SetSpawnPoint()
+{
+	if(HasAuthority() && BlasterPlayerState->GetTeam() != ETeam::ET_NoTeam)
+	{
+		TArray<AActor*> PlayerStart;
+		UGameplayStatics::GetAllActorsOfClass(this, ATeamPlayerStart::StaticClass(), PlayerStart);
+		TArray<ATeamPlayerStart*> TeamPlayerStarts;
+		for(auto& Start : PlayerStart)
+		{
+			ATeamPlayerStart* TeamStart = Cast<ATeamPlayerStart>(Start);
+			if(TeamStart && TeamStart->Team == BlasterPlayerState->GetTeam())
+			{
+				TeamPlayerStarts.Add(TeamStart);
+			}
+		}
+
+		if(TeamPlayerStarts.Num() > 0)
+		{
+			ATeamPlayerStart* ChosenPlayerStart = TeamPlayerStarts[FMath::RandRange(0, TeamPlayerStarts.Num() - 1)];
+			SetActorLocationAndRotation(
+				ChosenPlayerStart->GetActorLocation(),
+				ChosenPlayerStart->GetActorRotation()
+			);
+		}
+		
 	}
 }
 
@@ -1078,4 +1116,19 @@ void ABlasterCharacter::SetupPlayerInputComponent(UInputComponent* PlayerInputCo
 	PlayerInputComponent->BindAction("Reload", IE_Pressed, this, &ABlasterCharacter::ReloadButtonPress);
 	PlayerInputComponent->BindAction("ThrowGrenade", IE_Pressed, this, &ABlasterCharacter::GrenadeButtonPress);
 
+}
+
+
+void ABlasterCharacter::SetHoldingTheFlag(bool bHolding)
+{
+	if(Combat == nullptr) return;
+	Combat->bHoldingTheFlag = bHolding;
+}
+
+void ABlasterCharacter::RemoveFlag()
+{
+	if(Combat == nullptr) return;
+	
+	Combat->TheFlag = nullptr;
+	
 }

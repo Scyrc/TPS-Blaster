@@ -221,4 +221,5 @@ public:
 
 	FORCEINLINE USphereComponent* GetAreaSphere() const{return  AreaSphere;}
 	FORCEINLINE UWidgetComponent* GetPickupWidget() const{return PickupWidget;}
+	FORCEINLINE ETeam GetTeam() const {return Team;}
 };
