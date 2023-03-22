@@ -114,6 +114,8 @@ protected:
 
 	void AttachActorToRightHand(AActor* ActorToAttach);
 	void AttachActorToLeftHand(AActor* ActorToAttach);
+	void AttachFlagToLeftHand(AWeapon* Flag);
+
 	void AttachActorToBackpack(AActor* ActorToAttach);
 
 	void PlayEquipWeaponSound(AWeapon* WeaponToEquip);
@@ -215,5 +217,14 @@ private:
 	int32 MaxGrenades = 4;
 
 	void UpdateHUDGrenades();
+
+	UPROPERTY(ReplicatedUsing=OnRep_HoldingTheFlag)
+	bool bHoldingTheFlag = false;
+
+	UPROPERTY()
+	AWeapon* TheFlag;
+	
+	UFUNCTION()
+	void OnRep_HoldingTheFlag();
 };
 

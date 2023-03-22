@@ -277,6 +277,13 @@ void ABlasterCharacter::Tick(float DeltaTime)
 
 void ABlasterCharacter:: RotateInPlace(float DeltaTime)
 {
+	if(Combat && Combat->bHoldingTheFlag)
+	{
+		bUseControllerRotationYaw = false;
+		GetCharacterMovement()->bOrientRotationToMovement = true;
+		TurningInPlace = ETurningInPlace::ETIP_NotTuring;
+		return;
+	}
 	if(bDisableGamePlay)
 	{
 		bUseControllerRotationYaw = false;
@@ -447,6 +454,7 @@ void ABlasterCharacter::EquipButtonPress()
 	if(bDisableGamePlay) return;
 	if(Combat)   
 	{
+		if(Combat->bHoldingTheFlag) return;
 		if(Combat->CombatState == ECombatState::ECS_Unoccupied) ServerEquipButtonPress();
 		const bool bLocalSwap = !HasAuthority()&&
 			Combat->ShouldSwapWeapon()&&
@@ -479,7 +487,7 @@ void ABlasterCharacter::ServerEquipButtonPress_Implementation()
 void ABlasterCharacter::CrouchButtonPress()
 {
 	if(bDisableGamePlay) return;
-
+	if(Combat && Combat->bHoldingTheFlag) return;
 	if(bIsCrouched)
 	{
 		UnCrouch();
@@ -492,6 +500,8 @@ void ABlasterCharacter::CrouchButtonPress()
 
 void ABlasterCharacter::ReloadButtonPress()
 {
+	if(Combat && Combat->bHoldingTheFlag) return;
+
 	if(bDisableGamePlay) return;
 	if(Combat)
 	{
@@ -500,6 +510,8 @@ void ABlasterCharacter::ReloadButtonPress()
 }
 void ABlasterCharacter::AimButtonPress()
 {
+	if(Combat && Combat->bHoldingTheFlag) return;
+
 	if(bDisableGamePlay) return;
 	if(Combat)
 	{
@@ -509,6 +521,8 @@ void ABlasterCharacter::AimButtonPress()
 
 void ABlasterCharacter::GrenadeButtonPress()
 {
+	if(Combat && Combat->bHoldingTheFlag) return;
+
 	if(Combat)
 	{
 		Combat->ThrowGrenade();
@@ -597,6 +611,8 @@ void ABlasterCharacter::SimproxiesTurn()
 void ABlasterCharacter::Jump()
 {
 	if(bDisableGamePlay) return;
+	if(Combat && Combat->bHoldingTheFlag) return;
+
 	if(bIsCrouched)
 	{
 		UnCrouch();
@@ -609,6 +625,8 @@ void ABlasterCharacter::Jump()
 
 void ABlasterCharacter::FireButtonPressed()
 {
+	if(Combat && Combat->bHoldingTheFlag) return;
+
 	if(bDisableGamePlay) return;
 	if(Combat)
 	{
@@ -618,6 +636,8 @@ void ABlasterCharacter::FireButtonPressed()
 
 void ABlasterCharacter::FireButtonReleased()
 {
+	if(Combat && Combat->bHoldingTheFlag) return;
+
 	if(bDisableGamePlay) return;
 	if(Combat)
 	{
@@ -776,6 +796,22 @@ bool ABlasterCharacter::IsLocallyReloading() const
 	return Combat->bLocallyReloading;
 }
 
+bool ABlasterCharacter::IsHoldingTheFlag() const
+{
+	if(Combat == nullptr) return false;
+	return Combat->bHoldingTheFlag;
+}
+
+ETeam ABlasterCharacter::GetTeam()
+{
+	BlasterPlayerState = BlasterPlayerState == nullptr? GetPlayerState<ABlasterPlayerState>() : BlasterPlayerState;
+	if(BlasterPlayerState)
+	{
+		return BlasterPlayerState->GetTeam();
+	}
+	return ETeam::ET_NoTeam;
+}	
+
 void ABlasterCharacter::PlayFireMontage(bool bAiming)
 {
 	if(Combat == nullptr || Combat->EquippedWeapon == nullptr) return;
@@ -895,6 +931,10 @@ void ABlasterCharacter::DropOrDestroyWeapon()
 		if(Combat->SecondaryWeapon)
 		{
 			DropOrDestroyWeapon(Combat->SecondaryWeapon);
+		}
+		if (Combat->TheFlag)
+		{
+			Combat->TheFlag->Dropped();
 		}
 	}
 }

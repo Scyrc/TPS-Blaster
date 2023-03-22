@@ -362,4 +362,6 @@ public:
 	bool IsLocallyReloading() const ;
 
 	bool bFinishedSwapping = false;
+	bool IsHoldingTheFlag() const;
+	ETeam GetTeam();
 };

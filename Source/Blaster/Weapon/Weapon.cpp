@@ -95,6 +95,7 @@ void AWeapon::EnableCustomDepth(bool bEnable)
 // run on server
 void AWeapon::Dropped()
 {
+	
 	SetWeaponState(EWeaponState::EWS_Dropped);
 	const FDetachmentTransformRules DetachmentTransformRules(EDetachmentRule::KeepWorld, true);
 	WeaponMesh->DetachFromComponent(DetachmentTransformRules);
@@ -146,6 +147,8 @@ void AWeapon::OnSphereOverlap(UPrimitiveComponent* OVerlappedComponent, AActor* 
 	ABlasterCharacter* BlasterCharacter = Cast<ABlasterCharacter>(OtherActor);
 	if (BlasterCharacter && PickupWidget)
 	{
+		if(WeaponType == EWeaponType::EWT_Flag && BlasterCharacter->GetTeam() != Team) return;
+		if(BlasterCharacter->IsHoldingTheFlag()) return;
 		BlasterCharacter->SetOverlappingWeapon(this);
 	}
 }
@@ -155,6 +158,8 @@ void AWeapon::OnSphereEndOverlap(UPrimitiveComponent* OVerlappedComponent, AActo
 	ABlasterCharacter* BlasterCharacter = Cast<ABlasterCharacter>(OtherActor);
 	if (BlasterCharacter && PickupWidget)
 	{
+		if(WeaponType == EWeaponType::EWT_Flag && BlasterCharacter->GetTeam() != Team) return;
+		if(BlasterCharacter->IsHoldingTheFlag()) return;
 		BlasterCharacter->SetOverlappingWeapon(nullptr);
 	}
 }

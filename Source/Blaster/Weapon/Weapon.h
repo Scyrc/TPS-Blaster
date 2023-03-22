@@ -4,6 +4,7 @@
 
 #include "CoreMinimal.h"
 #include "WeaponTypes.h"
+#include "Blaster/BlasterTypes/Team.h"
 #include "GameFramework/Actor.h"
 #include "Weapon.generated.h"
 
@@ -45,7 +46,7 @@ public:
 	virtual void OnRep_Owner() override;
 	FORCEINLINE USkeletalMeshComponent* GetWeaponMesh() const {return WeaponMesh;}
 	virtual void Fire(const FVector& HitTarget);
-	void Dropped();
+	virtual void Dropped();
 	void Reload(int32 AmmoAmount);
 	int32 AmmoReloadNeeded() const;
 	UPROPERTY(EditAnywhere, Category = Crosshairs)
@@ -195,6 +196,9 @@ private:
 	
 	UPROPERTY(EditAnywhere)
 	EWeaponType WeaponType;
+	
+	UPROPERTY(EditAnywhere)
+	ETeam Team;
 public:
 	UPROPERTY(Replicated, EditAnywhere)
 	bool bUseServerSideReWind = false;
@@ -215,4 +219,6 @@ public:
 	FORCEINLINE float GetDamage () const {return Damage;}
 	FORCEINLINE float GetHeadShotDamage () const {return HeadShotDamage;}
 
+	FORCEINLINE USphereComponent* GetAreaSphere() const{return  AreaSphere;}
+	FORCEINLINE UWidgetComponent* GetPickupWidget() const{return PickupWidget;}
 };
