@@ -39,6 +39,8 @@ public:
 	float LevelStartingTime = 0.f;
 	FORCEINLINE float GetCountdownTime() const{return  CountdownTime;}
 
+	bool bTeamsMatch =false;
+
 protected:
 	virtual void BeginPlay() override;
 	virtual void Tick(float DeltaSeconds) override;

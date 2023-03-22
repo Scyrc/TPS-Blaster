@@ -8,6 +8,7 @@
 #include "BlasterPlayerController.generated.h"
 
 
+class ABlasterPlayerState;
 DECLARE_DYNAMIC_MULTICAST_DELEGATE_OneParam(FHighPingDelegate, bool, bPingTooHigh);
 /**
  * 
@@ -30,11 +31,15 @@ public:
 	void SetHUDMatchCountdown(float CountdownTime);
 	void SetHUDAnnouncementCountdown(float CountdownTime);
 	void SetHUDGrenades(int32 Grenades);
+	void HideTeamScore();
+	void InitTeamScore();
+	void SetRedTeamScore(int32 RedScore);
+	void SetBlueTeamScore(int32 BlueScore);
 
 	virtual void OnPossess(APawn* InPawn) override;
 	virtual float GetServerTime();
 	virtual void ReceivedPlayer() override;
-	void OnMatchStateSet(FName State);
+	void OnMatchStateSet(FName State, bool bTeamsMatch = false);
 	virtual void GetLifetimeReplicatedProps(TArray< FLifetimeProperty > & OutLifetimeProps) const override;
 
 	float SingleTripTime = 0.f;
@@ -66,7 +71,7 @@ protected:
 	float TimeSyncRunningTime =0.f;
 	void CheckTimeSync(float DeltaTime);
 
-	void HandleMatchHasStarted();
+	void HandleMatchHasStarted(bool bTeamsMatch =false);
 	void HandleMatchCooldown();
 
 	UFUNCTION(Server, Reliable)
@@ -81,6 +86,15 @@ protected:
 	void CheckPing(float DeltaTime);
 
 	void ShowReturnToMainMenu();
+
+	UPROPERTY(ReplicatedUsing=OnRep_bShowTeamScores)
+	bool bShowTeamScores = false;
+
+	UFUNCTION()
+	void OnRep_bShowTeamScores();
+
+	FString GetInfoText(const TArray<ABlasterPlayerState*>& TopPlayers);
+	FString GetTeamInfoText(class ABlasterGameState* BlasterGameState);
 
 private:
 	/*
