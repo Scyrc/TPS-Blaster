@@ -2,10 +2,6 @@
 
 
 #include "Casing.h"
-
-#include <complex.h>
-#include <complex.h>
-
 #include "Kismet/GameplayStatics.h"
 #include "Sound/SoundCue.h"
 

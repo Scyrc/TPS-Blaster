@@ -2,7 +2,6 @@
 
 
 #include "HitScanWeapon.h"
-#include "WeaponTypes.h"
 #include "Blaster/BlasterComponents/LagCompensationComponent.h"
 #include "Blaster/Character/BlasterCharacter.h"
 #include "Blaster/PlayerController/BlasterPlayerController.h"

@@ -4,9 +4,7 @@
 #include "BlasterCharacter.h"
 
 #include "NiagaraComponent.h"
-#include "NiagaraEffectType.h"
 #include "NiagaraFunctionLibrary.h"
-#include "ThumbnailExternalCache.h"
 #include "Blaster/Blaster.h"
 #include "Blaster/BlasterComponents/BuffComponent.h"
 #include "Blaster/BlasterComponents/CombatComponent.h"
