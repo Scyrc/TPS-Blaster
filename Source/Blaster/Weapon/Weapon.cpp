@@ -212,7 +212,6 @@ void AWeapon::OnEquipped()
 	}
 	EnableCustomDepth(false);
 	OwnerCharacter = OwnerCharacter==nullptr?  Cast<ABlasterCharacter>(GetOwner()) : OwnerCharacter;
-	
 }
 
 void AWeapon::OnEquippedSecondary()
@@ -467,4 +466,21 @@ FVector AWeapon::TraceEndWithScatter(const FVector& HitTarget)
 
 	
 	return FVector(TraceStart + ToEndLocNormalized);
+}
+
+EEquippedType AWeapon::GetWeaponEquipType() const
+{
+	if(WeaponType == EWeaponType::EWT_Pistol) return EEquippedType::EET_Secondary;
+	if(WeaponType == EWeaponType::EWT_knife) return EEquippedType::EET_Knife;
+	if(WeaponType == EWeaponType::EWT_C4Bomb) return EEquippedType::EET_Bomb;
+	if(WeaponType == EWeaponType::EWT_AssaultRifle||
+		WeaponType == EWeaponType::EWT_RocketLauncher||
+		WeaponType == EWeaponType::EWT_SubmachineGun||
+		WeaponType == EWeaponType::EWT_Shotgun||
+		WeaponType == EWeaponType::EWT_SniperRifle||
+		WeaponType == EWeaponType::EWT_GrenadeLauncher)
+	{
+		return EEquippedType::EET_Primary;
+	}
+	return EEquippedType::EET_Idle;
 }

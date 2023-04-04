@@ -59,8 +59,13 @@ public:
 
 	bool bLocallyReloading = false;
 
-protected:
+	void SwitchWeapon(int32 WeaponIndex);
+
+	void DropWeapon();
 	
+protected:
+	AWeapon* GetWeaponByIndex(int32 WeaponIndex);
+
 	virtual void BeginPlay() override;
 	void SetAiming(bool bIsAiming);
 
@@ -69,6 +74,12 @@ protected:
 	UFUNCTION()
 	void OnRep_EquippedWeapon();
 
+	UFUNCTION()
+	void OnRep_PrimaryWeapon();
+
+	UFUNCTION()
+	void OnRep_KnifeWeapon();
+	
 	UFUNCTION()
 	void OnRep_SecondaryWeapon();
 	
@@ -111,12 +122,16 @@ protected:
 	TSubclassOf<class AProjectile> GrenadeClass;
 	
 	void DropEquippedWeapon();
-
+	
 	void AttachActorToRightHand(AActor* ActorToAttach);
 	void AttachActorToLeftHand(AActor* ActorToAttach);
 	void AttachFlagToLeftHand(AWeapon* Flag);
+	void AttachBomb(AWeapon* Flag);
 
 	void AttachActorToBackpack(AActor* ActorToAttach);
+	void AttachPrimaryWeapon(AActor* ActorToAttach);
+	void AttachSecondaryWeapon(AActor* ActorToAttach);
+	void AttachKnifeWeapon(AActor* ActorToAttach);
 
 	void PlayEquipWeaponSound(AWeapon* WeaponToEquip);
 
@@ -126,8 +141,11 @@ protected:
 
 	void EquipPrimaryWeapon(AWeapon* WeaponToEquip);
 	void EquipSecondaryWeapon(AWeapon* WeaponToEquip);
+	void EquipKnifeWeapon(AWeapon* WeaponToEquip);
 
 private:
+	UPROPERTY(EditAnywhere, Category="Camera")
+	float CrossDistance = 10.f;
 	UPROPERTY()
 	ABlasterCharacter* Character;
 	UPROPERTY()
@@ -135,11 +153,24 @@ private:
 	class ABlasterPlayerController* Controller;
 	UPROPERTY()
 	class ABlasterHUD* HUD;
+	/*
+	 * Equip Weapons
+	 */
 	UPROPERTY(ReplicatedUsing=OnRep_EquippedWeapon)
 	AWeapon* EquippedWeapon;
 
+	UPROPERTY(ReplicatedUsing=OnRep_PrimaryWeapon)
+	AWeapon* PrimaryWeapon;
+	
 	UPROPERTY(ReplicatedUsing=OnRep_SecondaryWeapon)
 	AWeapon* SecondaryWeapon;
+
+	UPROPERTY(ReplicatedUsing=OnRep_KnifeWeapon)
+	AWeapon* KnifeWeapon;
+
+
+	UFUNCTION(NetMulticast, Reliable)
+	void MulticastAttachWeapon(const int32 WeaponIndex);
 	
 	UPROPERTY(ReplicatedUsing="OnRep_Aiming")
 	bool bAiming;
@@ -172,8 +203,7 @@ private:
 	
 	UPROPERTY(EditAnywhere, Category = Combat)
 	float ZoomInterpSpeed = 20.f;
-
-
+	
 	void InterpFOV(float DeltaTime);
 
 	/*
@@ -226,5 +256,17 @@ private:
 	
 	UFUNCTION()
 	void OnRep_HoldingTheFlag();
-};
 
+	/*
+	 * C4Bomb
+	 */
+
+	UPROPERTY(Replicated)
+	AWeapon* C4BoomWeapon;
+	
+	UPROPERTY()
+	bool bInBombZone =false;
+
+	UPROPERTY(Replicated)
+	int32 TargetWeaponIndex = -1;
+};

@@ -120,6 +120,12 @@ protected:
 	void ReloadButtonPress();
 	void AimButtonPress();
 	void GrenadeButtonPress();
+	void SwitchPrimaryButtonPress();
+	void SwitchSecondaryButtonPress();
+	void SwitchKnifeButtonPress();
+	void SwitchPropsButtonPress();
+	void SwitchBombButtonPress();
+	void DropWeaponButtonPress();
 
 	void CalculateAO_Pitch();
 	void AimOffset(float DeltaTime);
@@ -143,6 +149,8 @@ protected:
 	void OnPlayerStateInitialized();
 
 private:
+	UPROPERTY(EditAnywhere, Category="Camera")
+	bool IsFPS = true;
 	UPROPERTY(VisibleAnywhere, Category="Camera")
 	class USpringArmComponent* CameraBoom;
 
@@ -170,8 +178,11 @@ private:
 	UFUNCTION(Server, Reliable)	
 	void ServerEquipButtonPress();
 
-	
+	UFUNCTION(Server, Reliable)	
+	void ServerSwitchButtonPress(int32 WeaponIndex);
 
+	UFUNCTION(Server, Reliable)	
+	void ServerDropButtonPress();
 
 	float AO_Yaw;
 	float InterAO_Yaw;
@@ -200,7 +211,8 @@ private:
 	UAnimMontage* SwapMontage;
 	
 	void HideCameraIfCharacterClose();
-	
+	void HideCameraIfAimming();
+
 	UPROPERTY(EditAnywhere, Category="Camera")
 	float CameraThreshold = 200.f;
 	bool bRotateRootBone;
@@ -361,6 +373,8 @@ public:
 	FORCEINLINE bool GetDisableGameplay() const {return bDisableGamePlay;}
 	FORCEINLINE UAnimMontage* GetReloadMontage() const {return ReloadMontage;}
 	FORCEINLINE UStaticMeshComponent* GetAttachedGrenade() const {return AttachedGrenade;}
+	FORCEINLINE void SetInBombZone(bool bInZone);
+
 	bool IsLocallyReloading() const ;
 
 	bool bFinishedSwapping = false;
@@ -371,3 +385,4 @@ public:
 	void RemoveFlag();
 
 };
+

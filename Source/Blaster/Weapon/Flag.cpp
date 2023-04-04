@@ -87,10 +87,9 @@ void AFlag::OnEquipped()
 {
 	//Super::OnEquipped();
 
-	if(HasAuthority())
-	{
-		GetAreaSphere()->SetCollisionEnabled(ECollisionEnabled::NoCollision);
-	}
+	
+	GetAreaSphere()->SetCollisionEnabled(ECollisionEnabled::NoCollision);
+	
 	ShowPickupWidget(false);
 	FlagMesh->SetSimulatePhysics(false);
 	FlagMesh->SetEnableGravity(false);

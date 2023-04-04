@@ -20,6 +20,18 @@ enum class EWeaponState : uint8
 	EWS_Max UMETA(DisplayName = "DefaultMax")
 };
 
+UENUM(BlueprintType)
+enum class EEquippedType : uint8
+{
+	EET_Primary UMETA(DisplayName = "Primary"),
+	EET_Secondary  UMETA(DisplayName = "Secondary"),
+	EET_Knife UMETA(DisplayName = "Knife"),
+	EET_Prop UMETA(DisplayName = "Prop"),
+	EET_Bomb UMETA(DisplayName = "Bomb"),
+	EET_Idle UMETA(DisplayName = "Idle"),
+
+	EET_MAX UMETA(DisplayName = "DefaultMAX")
+};
 
 UENUM(BlueprintType)
 enum class EFireType : uint8
@@ -79,6 +91,8 @@ public:
 
 	FORCEINLINE bool GetUseScatter() const{return bUseScatter;}
 	FVector TraceEndWithScatter(const FVector& HitTarget);
+
+	EEquippedType GetWeaponEquipType() const;
 
 protected:
 	UPROPERTY(EditDefaultsOnly)

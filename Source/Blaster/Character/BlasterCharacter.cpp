@@ -14,6 +14,7 @@
 #include "Blaster/PlayerController/BlasterPlayerController.h"
 #include "Blaster/PlayerStart/TeamPlayerStart.h"
 #include "Blaster/PlayerState/BlasterPlayerState.h"
+#include "Blaster/Weapon/C4.h"
 #include "GameFramework/SpringArmComponent.h"
 #include "Camera/CameraComponent.h"
 #include "GameFramework/CharacterMovementComponent.h"
@@ -38,10 +39,9 @@ ABlasterCharacter::ABlasterCharacter()
 	CameraBoom->bUsePawnControlRotation = true;
 
 	FollowCamera = CreateDefaultSubobject<UCameraComponent>(TEXT("FollowCamera"));
-	FollowCamera->SetupAttachment(CameraBoom);
-	FollowCamera->bUsePawnControlRotation = false;
-	
-	bUseControllerRotationYaw = false;
+	FollowCamera->SetupAttachment(GetMesh(), FName("FPSCameraSocket"));
+	FollowCamera->bUsePawnControlRotation = true;
+	bUseControllerRotationYaw = true;
 	GetCharacterMovement()->bOrientRotationToMovement = true;
 
 	OverheadWidget = CreateDefaultSubobject<UWidgetComponent>(TEXT("OverheadWidget"));
@@ -270,8 +270,9 @@ void ABlasterCharacter::PostInitializeComponents()
 void ABlasterCharacter::Tick(float DeltaTime)
 {
 	Super::Tick(DeltaTime);
-	RotateInPlace(DeltaTime);
+	//RotateInPlace(DeltaTime);
 	HideCameraIfCharacterClose();
+	HideCameraIfAimming();
 	PollInit();
 }
 
@@ -397,8 +398,40 @@ void ABlasterCharacter::OnPlayerStateInitialized()
 void ABlasterCharacter::HideCameraIfCharacterClose()
 {
 	if(!IsLocallyControlled()) return;
+		
+	if(IsFPS) return;
 
 	if((FollowCamera->GetComponentLocation() - GetActorLocation()).Size() < CameraThreshold)
+	{
+		GetMesh()->SetVisibility(false);
+		if(Combat && Combat->EquippedWeapon && Combat->EquippedWeapon->GetWeaponMesh())
+		{
+			Combat->EquippedWeapon->GetWeaponMesh()->bOwnerNoSee = true;
+		}
+		if(Combat && Combat->SecondaryWeapon && Combat->SecondaryWeapon->GetWeaponMesh())
+		{
+			Combat->SecondaryWeapon->GetWeaponMesh()->bOwnerNoSee = true;
+		}
+	}
+	else
+	{
+		GetMesh()->SetVisibility(true);
+		if(Combat && Combat->EquippedWeapon && Combat->EquippedWeapon->GetWeaponMesh())
+		{
+			Combat->EquippedWeapon->GetWeaponMesh()->bOwnerNoSee = false;
+		}
+		if(Combat && Combat->SecondaryWeapon && Combat->SecondaryWeapon->GetWeaponMesh())
+		{
+			Combat->SecondaryWeapon->GetWeaponMesh()->bOwnerNoSee = false;
+		}
+	}
+}
+
+void ABlasterCharacter::HideCameraIfAimming()
+{
+	if(!IsLocallyControlled()) return;
+
+	if(Combat->bAiming)
 	{
 		GetMesh()->SetVisibility(false);
 		if(Combat && Combat->EquippedWeapon && Combat->EquippedWeapon->GetWeaponMesh())
@@ -464,7 +497,7 @@ void ABlasterCharacter::EquipButtonPress()
 	{
 		if(Combat->bHoldingTheFlag) return;
 		if(Combat->CombatState == ECombatState::ECS_Unoccupied) ServerEquipButtonPress();
-		const bool bLocalSwap = !HasAuthority()&&
+		/*const bool bLocalSwap = !HasAuthority()&&
 			Combat->ShouldSwapWeapon()&&
 			Combat->CombatState == ECombatState::ECS_Unoccupied&&
 			OverlappingWeapon == nullptr;
@@ -473,7 +506,7 @@ void ABlasterCharacter::EquipButtonPress()
 			PlaySwapMontage();
 			Combat->CombatState = ECombatState::ECS_SwappingWeapons;
 			bFinishedSwapping =false;
-		}
+		}*/
 	}
 }
 
@@ -485,10 +518,10 @@ void ABlasterCharacter::ServerEquipButtonPress_Implementation()
 		{
 			Combat->EquipWeapon(OverlappingWeapon);
 		}
-		else if(Combat->ShouldSwapWeapon())
+		/*else if(Combat->ShouldSwapWeapon())
 		{
 			Combat->SwapWeapons();
-		}
+		}*/
 	}
 }
 
@@ -535,6 +568,82 @@ void ABlasterCharacter::GrenadeButtonPress()
 	{
 		Combat->ThrowGrenade();
 	}
+}
+inline void ABlasterCharacter::ServerSwitchButtonPress_Implementation(int32 WeaponIndex)
+{
+	if(Combat)
+	{
+		Combat->SwitchWeapon(WeaponIndex);
+	}
+}
+
+
+inline void ABlasterCharacter::ServerDropButtonPress_Implementation()
+{
+	if(Combat)
+	{
+		Combat->DropWeapon();
+	}
+}
+
+void ABlasterCharacter::SwitchPrimaryButtonPress()
+{
+	if(bDisableGamePlay) return;
+	if(Combat)   
+	{
+		if(Combat->bHoldingTheFlag) return;
+		if(Combat->CombatState == ECombatState::ECS_Unoccupied) ServerSwitchButtonPress(1);
+		/*const bool bLocalSwap = !HasAuthority()&&
+			Combat->ShouldSwapWeapon()&&
+			Combat->CombatState == ECombatState::ECS_Unoccupied&&
+			OverlappingWeapon == nullptr;
+		if(bLocalSwap)
+		{
+			PlaySwapMontage();
+			Combat->CombatState = ECombatState::ECS_SwappingWeapons;
+			bFinishedSwapping =false;
+		}*/
+	}
+}
+
+void ABlasterCharacter::SwitchSecondaryButtonPress()
+{
+	if(bDisableGamePlay) return;
+	if(Combat == nullptr) return;   
+	if(Combat->bHoldingTheFlag) return;
+	if(Combat->CombatState == ECombatState::ECS_Unoccupied) ServerSwitchButtonPress(2);
+}
+
+void ABlasterCharacter::SwitchKnifeButtonPress()
+{
+	if(bDisableGamePlay) return;
+	if(Combat == nullptr) return;   
+	if(Combat->bHoldingTheFlag) return;
+	if(Combat->CombatState == ECombatState::ECS_Unoccupied) ServerSwitchButtonPress(3);
+	
+}
+
+void ABlasterCharacter::SwitchPropsButtonPress()
+{
+	if(bDisableGamePlay) return;
+	if(Combat == nullptr) return;   
+	if(Combat->bHoldingTheFlag) return;
+	if(Combat->CombatState == ECombatState::ECS_Unoccupied) ServerSwitchButtonPress(4);
+}
+
+void ABlasterCharacter::SwitchBombButtonPress()
+{
+	if(bDisableGamePlay) return;
+	if(Combat == nullptr) return;   
+	if(Combat->bHoldingTheFlag) return;
+	if(Combat->CombatState == ECombatState::ECS_Unoccupied) ServerSwitchButtonPress(5);
+}
+
+void ABlasterCharacter::DropWeaponButtonPress()
+{
+	if(Combat == nullptr) return;   
+	if(Combat->bHoldingTheFlag) return;
+	if(Combat->CombatState == ECombatState::ECS_Unoccupied) ServerDropButtonPress();
 }
 
 void ABlasterCharacter::CalculateAO_Pitch()
@@ -773,6 +882,10 @@ void ABlasterCharacter::SetOverlappingWeapon(AWeapon* Weapon)
 	if (OverlappingWeapon&& IsLocallyControlled())
 	{
 		OverlappingWeapon->ShowPickupWidget(true);
+		if(AC4* C4Boom = Cast<AC4>(OverlappingWeapon))
+		{
+			UE_LOG(LogTemp, Warning, TEXT("c4boom"));
+		}
 	}
 }
 
@@ -796,6 +909,12 @@ ECombatState ABlasterCharacter::GetCombatState() const
 {
 	if(Combat == nullptr) return ECombatState::ECS_MAX;
 	return Combat->CombatState;
+}
+
+void ABlasterCharacter::SetInBombZone(bool bInZone)
+{
+	if(Combat == nullptr) return;
+	Combat->bInBombZone = bInZone;
 }
 
 bool ABlasterCharacter::IsLocallyReloading() const
@@ -932,9 +1051,9 @@ void ABlasterCharacter::DropOrDestroyWeapon()
 {
 	if(Combat)
 	{
-		if(Combat->EquippedWeapon)
+		if(Combat->PrimaryWeapon)
 		{
-			DropOrDestroyWeapon(Combat->EquippedWeapon);
+			DropOrDestroyWeapon(Combat->PrimaryWeapon);
 		}
 		if(Combat->SecondaryWeapon)
 		{
@@ -943,6 +1062,11 @@ void ABlasterCharacter::DropOrDestroyWeapon()
 		if (Combat->bHoldingTheFlag && Combat->TheFlag)
 		{
 			Combat->TheFlag->Dropped();
+		}
+		if (Combat->C4BoomWeapon)
+		{
+			Combat->C4BoomWeapon->Dropped();
+			Combat->C4BoomWeapon = nullptr;
 		}
 	}
 }
@@ -1114,6 +1238,13 @@ void ABlasterCharacter::SetupPlayerInputComponent(UInputComponent* PlayerInputCo
 	PlayerInputComponent->BindAction("Reload", IE_Pressed, this, &ABlasterCharacter::ReloadButtonPress);
 	PlayerInputComponent->BindAction("ThrowGrenade", IE_Pressed, this, &ABlasterCharacter::GrenadeButtonPress);
 
+	PlayerInputComponent->BindAction("SwitchPrimary", IE_Pressed, this, &ABlasterCharacter::SwitchPrimaryButtonPress);
+	PlayerInputComponent->BindAction("SwitchSecondary", IE_Pressed, this, &ABlasterCharacter::SwitchSecondaryButtonPress);
+	PlayerInputComponent->BindAction("SwitchKnife", IE_Pressed, this, &ABlasterCharacter::SwitchKnifeButtonPress);
+	PlayerInputComponent->BindAction("SwitchProps", IE_Pressed, this, &ABlasterCharacter::SwitchPropsButtonPress);
+	PlayerInputComponent->BindAction("SwitchBomb", IE_Pressed, this, &ABlasterCharacter::SwitchBombButtonPress);
+	PlayerInputComponent->BindAction("DropWeapon", IE_Pressed, this, &ABlasterCharacter::DropWeaponButtonPress);
+
 }
 
 
@@ -1128,5 +1259,4 @@ void ABlasterCharacter::RemoveFlag()
 	if(Combat == nullptr) return;
 	
 	Combat->TheFlag = nullptr;
-	
 }
