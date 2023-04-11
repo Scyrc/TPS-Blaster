@@ -14,6 +14,7 @@ class BLASTER_API UReturnWidget : public UUserWidget
 {
 	GENERATED_BODY()
 public:
+	
 	void MenuSetup();
 	void MenuTearDown();
 protected:
