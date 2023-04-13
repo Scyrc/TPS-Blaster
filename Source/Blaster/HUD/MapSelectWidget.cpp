@@ -74,10 +74,10 @@ bool UMapSelectWidget::Initialize()
 	return true;
 }
 
-void UMapSelectWidget::OnLevelRemovedFromWorld(ULevel* InLevel, UWorld* InWorld)
+void UMapSelectWidget::NativeDestruct()
 {
 	MenuTearDown();
-	Super::OnLevelRemovedFromWorld(InLevel, InWorld);
+	Super::NativeDestruct();
 }
 void UMapSelectWidget::OnCreateSession(bool bWasSuccessful)
 {

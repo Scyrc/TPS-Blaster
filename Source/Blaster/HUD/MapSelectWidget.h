@@ -20,7 +20,7 @@ public:
 	void MenuSetup(int32 NumberOfPublicConnections, FString TypeOfMatch, FString LobbyPath);
 protected:
 	virtual bool Initialize() override;
-	virtual void OnLevelRemovedFromWorld(ULevel* InLevel, UWorld* InWorld) override;
+	virtual void NativeDestruct() override;
 
 	//
 	// Callbacks for the custom delegates on the MultiplayerSessionsSubsystem
