@@ -7,7 +7,7 @@
 #include "LobbyGameMode.generated.h"
 
 /**
- * 
+ * 5
  */
 UCLASS()
 class BLASTER_API ALobbyGameMode : public AGameMode
@@ -16,7 +16,14 @@ class BLASTER_API ALobbyGameMode : public AGameMode
 	
 public:
 	virtual void PostLogin(APlayerController* NewPlayer) override;
+	
+	virtual void Tick(float DeltaSeconds) override;
 private:
 	UPROPERTY(EditDefaultsOnly)
 	int32 PlayersNum = 1;
+
+	UPROPERTY(EditAnywhere)
+	bool bPieEnv = false;
+
+	bool bLeave = false;
 };

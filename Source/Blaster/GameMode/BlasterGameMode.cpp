@@ -4,6 +4,7 @@
 #include "BlasterGameMode.h"
 
 #include "Blaster/Character/BlasterCharacter.h"
+#include "Blaster/GameInstance/BlasterGameInstance.h"
 #include "Blaster/GameState/BlasterGameState.h"
 #include "Blaster/PlayerController/BlasterPlayerController.h"
 #include "Blaster/PlayerState/BlasterPlayerState.h"
@@ -12,7 +13,11 @@
 
 namespace MatchState
 {
+	const FName Warmup = FName("Warmup");
+	const FName Round = FName("Round");
+	const FName Calculate = FName("Calculate");
 	const FName Cooldown = FName("Cooldown");
+	const FName GameSummary = FName("GameSummary");
 }
 ABlasterGameMode::ABlasterGameMode()
 {
@@ -24,23 +29,47 @@ void ABlasterGameMode::BeginPlay()
 	Super::BeginPlay();
 
 	LevelStartingTime = GetWorld()->GetTimeSeconds();
-	//UE_LOG(LogTemp, Warning, TEXT("LevelStartingTime: %f"), LevelStartingTime);
+	
+	UBlasterGameInstance* BlasterGameInstance = Cast<UBlasterGameInstance>(GetGameInstance());
+	
+	if(BlasterGameInstance)
+	{
+		RoundNum = BlasterGameInstance->RoundNum;
+	}
+	
+	UE_LOG(LogTemp, Warning, TEXT("LevelStartingTime: %f"), LevelStartingTime);
 }
 
 void ABlasterGameMode::Tick(float DeltaSeconds)
 {
 	Super::Tick(DeltaSeconds);
+	//UE_LOG(LogTemp, Warning, TEXT("GameMode Called PlayerIndex: %s"), *MatchState.ToString());
+
+	//GEngine->AddOnScreenDebugMessage(-1, 2.0f, FColor::Red, *MatchState.ToString());
 	if(MatchState == MatchState::WaitingToStart)
 	{
-		CountdownTime = WarmupTime + LevelStartingTime - GetWorld()->GetTimeSeconds();
+		CountdownTime = LoadingTime + LevelStartingTime - GetWorld()->GetTimeSeconds();
 		if(CountdownTime <= 0.f)
 		{
-			StartMatch();
+			SetMatchState(MatchState::InProgress);
 		}
 	}
 	else if(MatchState == MatchState::InProgress)
 	{
-		CountdownTime = MatchTime + WarmupTime + LevelStartingTime - GetWorld()->GetTimeSeconds();
+		SetMatchState(MatchState::Warmup);
+	}
+	else if(MatchState == MatchState::Warmup)
+	{
+		
+		CountdownTime = LoadingTime +  WarmupTime + LevelStartingTime - GetWorld()->GetTimeSeconds();
+		if(CountdownTime <= 0.f)
+		{
+			SetMatchState(MatchState::Round);
+		}
+	}
+	else if(MatchState == MatchState::Round)
+	{
+		CountdownTime =  LoadingTime +  MatchTime + WarmupTime + LevelStartingTime - GetWorld()->GetTimeSeconds();
 		if(CountdownTime <= 0.f)
 		{
 			SetMatchState(MatchState::Cooldown);
@@ -48,10 +77,25 @@ void ABlasterGameMode::Tick(float DeltaSeconds)
 	}
 	else if(MatchState == MatchState::Cooldown)
 	{
-		CountdownTime = CooldownTime + MatchTime + WarmupTime + LevelStartingTime - GetWorld()->GetTimeSeconds();
+		CountdownTime = LoadingTime + CooldownTime + MatchTime + WarmupTime + LevelStartingTime - GetWorld()->GetTimeSeconds();
 		if(CountdownTime <= 0.f)
 		{
-			RestartGame();
+			if(RoundNum > MaxRoundNum) // game over
+			{
+				SetMatchState(MatchState::GameSummary);
+			}
+			else  // next round game
+			{
+				RestartGame();
+			}
+		}
+	}
+	else if(MatchState == MatchState::GameSummary)
+	{
+		CountdownTime =  GameSummaryTime + LoadingTime + CooldownTime + MatchTime + WarmupTime + LevelStartingTime - GetWorld()->GetTimeSeconds();
+		if(CountdownTime <=0.f)
+		{
+			SetMatchState(MatchState::LeavingMap);
 		}
 	}
 }
@@ -59,7 +103,19 @@ void ABlasterGameMode::Tick(float DeltaSeconds)
 void ABlasterGameMode::OnMatchStateSet()
 {
 	Super::OnMatchStateSet();
-
+	if(MatchState == MatchState::Round)
+	{
+		++RoundNum;
+		UBlasterGameInstance* BlasterGameInstance = Cast<UBlasterGameInstance>(GetGameInstance());
+		check(BlasterGameInstance)
+		BlasterGameInstance->RoundNum = RoundNum;
+	}
+	if(MatchState == MatchState::Cooldown)
+	{
+		CalculateMsg();
+	}
+	//LevelStartingTime = GetWorld()->GetTimeSeconds();
+	UE_LOG(LogTemp,Warning, TEXT("MATCH state: %s"), *MatchState.ToString());
 	for(FConstPlayerControllerIterator It = GetWorld()->GetPlayerControllerIterator();It;++It)
 	{
 		ABlasterPlayerController* BlasterPlayerController = Cast<ABlasterPlayerController>(*It);
@@ -68,6 +124,10 @@ void ABlasterGameMode::OnMatchStateSet()
 			BlasterPlayerController->OnMatchStateSet(MatchState, bTeamsMatch);
 		}
 	}
+}
+
+void ABlasterGameMode::CalculateMsg()
+{
 	
 }
 

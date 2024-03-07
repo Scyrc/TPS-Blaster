@@ -37,6 +37,8 @@ public:
 	void UpdateHUDShield();
 	void SpawnDefaultWeapon();
 
+	UPROPERTY(EditDefaultsOnly, Category="FPSMESH")
+	USkeletalMeshComponent* FPSMesh;
 	/*
 	 * Hit Boxes used for server-side rewind
 	 */
@@ -108,6 +110,9 @@ public:
 	UFUNCTION(NetMulticast, Reliable)
 	void MulticastLostTheLead();
 	void SetTeamColor(ETeam Team);
+	UFUNCTION(NetMulticast, Reliable)
+	void SetPickedColor(const FString& HeroName);
+
 protected:
 
 	virtual void BeginPlay() override;
@@ -126,6 +131,16 @@ protected:
 	void SwitchPropsButtonPress();
 	void SwitchBombButtonPress();
 	void DropWeaponButtonPress();
+
+	void SkillOneButtonPress();
+	void SkillTwoButtonPress();
+	void SkillThreeButtonPress();
+	void SkillFourButtonPress();
+
+	void SwitchView();
+
+	void BuyItems();
+
 
 	void CalculateAO_Pitch();
 	void AimOffset(float DeltaTime);
@@ -148,6 +163,9 @@ protected:
 	void SetSpawnPoint();
 	void OnPlayerStateInitialized();
 
+	UPROPERTY(EditDefaultsOnly, Category= "Action")
+	TArray<FName> SkillsName;
+	
 private:
 	UPROPERTY(EditAnywhere, Category="Camera")
 	bool IsFPS = true;
@@ -155,7 +173,10 @@ private:
 	class USpringArmComponent* CameraBoom;
 
 	UPROPERTY(VisibleAnywhere, Category = "Camera")
-	class UCameraComponent* FollowCamera;
+	class UCameraComponent* TPSCamera;
+
+	UPROPERTY(VisibleAnywhere, Category = "Camera")
+	class UCameraComponent* FPSCamera;
 
 	UPROPERTY(EditAnywhere, BlueprintReadOnly, meta = (AllowPrivateAccess= "true")) 
 	class UWidgetComponent* OverheadWidget;
@@ -174,6 +195,9 @@ private:
 
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, meta=(AllowPrivateAccess = "true"))
 	class ULagCompensationComponent* LagCompensation;
+
+	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, meta=(AllowPrivateAccess = "true"))
+	class UActionComponent*  ActionComp;
 	
 	UFUNCTION(Server, Reliable)	
 	void ServerEquipButtonPress();
@@ -267,7 +291,19 @@ private:
 
 	UPROPERTY(VisibleAnywhere, Category="Elim")	
 	UMaterialInstance* DissolveMaterialInstance;
+	/*
+	 * picked color
+	 */
+	UPROPERTY(EditAnywhere, Category="Elim")	
+	UMaterialInstance* DefaultMaterialInstance;
+	
 
+	UPROPERTY(EditAnywhere, Category="Elim")	
+	UMaterialInstance* PurpleMaterialInstance;
+
+	UPROPERTY(EditAnywhere, Category="Elim")	
+	UMaterialInstance* GoldMaterialInstance;
+	
 	/*
 	 * Team color
 	 */
@@ -346,7 +382,7 @@ public:
 	void PlaySwapMontage();
 
 	FVector GetHitTarget() const;
-	FORCEINLINE UCameraComponent* GetFollowCamera() const {return FollowCamera;}
+	FORCEINLINE UCameraComponent* GetFollowCamera() const {return TPSCamera;}
 
 	FORCEINLINE bool ShouldRotateRootBone() const{ return  bRotateRootBone;}
 
@@ -373,7 +409,7 @@ public:
 	FORCEINLINE bool GetDisableGameplay() const {return bDisableGamePlay;}
 	FORCEINLINE UAnimMontage* GetReloadMontage() const {return ReloadMontage;}
 	FORCEINLINE UStaticMeshComponent* GetAttachedGrenade() const {return AttachedGrenade;}
-	FORCEINLINE void SetInBombZone(bool bInZone);
+	void SetInBombZone(bool bInZone);
 
 	bool IsLocallyReloading() const ;
 

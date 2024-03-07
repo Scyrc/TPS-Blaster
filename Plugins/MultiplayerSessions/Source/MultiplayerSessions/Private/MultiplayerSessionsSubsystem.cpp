@@ -4,7 +4,7 @@
 #include "MultiplayerSessionsSubsystem.h"
 #include "OnlineSubsystem.h"
 #include "OnlineSessionSettings.h"
-
+#include "Interfaces/OnlineIdentityInterface.h"
 UMultiplayerSessionsSubsystem::UMultiplayerSessionsSubsystem():
 	CreateSessionCompleteDelegate(FOnCreateSessionCompleteDelegate::CreateUObject(this, &ThisClass::OnCreateSessionComplete)),
 	FindSessionsCompleteDelegate(FOnFindSessionsCompleteDelegate::CreateUObject(this, &ThisClass::OnFindSessionsComplete)),
@@ -16,6 +16,7 @@ UMultiplayerSessionsSubsystem::UMultiplayerSessionsSubsystem():
 	if (Subsystem)
 	{
 		SessionInterface = Subsystem->GetSessionInterface();
+		IdentityInterface = Subsystem->GetIdentityInterface();
 	}
 }
 
@@ -123,6 +124,26 @@ void UMultiplayerSessionsSubsystem::DestroySession()
 
 void UMultiplayerSessionsSubsystem::StartSession()
 {
+}
+
+FPlayerMsgStruct UMultiplayerSessionsSubsystem::GetPlayerName(int32 LocalUserNum) const
+{
+	FString PlayerName;
+	FString PlayerId;
+	int32 PlayerIndex = -999;
+	
+	const auto ExistingSession = SessionInterface->GetNamedSession(NAME_GameSession);
+	if (ExistingSession != nullptr)
+	{
+		PlayerIndex = ExistingSession->HostingPlayerNum;
+	}
+	if(IdentityInterface.IsValid())
+	{
+		PlayerName = IdentityInterface.Get()->GetPlayerNickname(LocalUserNum);
+		PlayerId = IdentityInterface.Get()->GetUniquePlayerId(LocalUserNum).Get()->ToString();
+
+	}
+	return FPlayerMsgStruct(PlayerId, PlayerName, PlayerIndex);
 }
 
 void UMultiplayerSessionsSubsystem::OnCreateSessionComplete(FName SessionName, bool bWasSuccessful)

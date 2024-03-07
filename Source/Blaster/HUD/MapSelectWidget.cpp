@@ -9,6 +9,7 @@
 #include "ReturnWidget.h"
 #include "Blaster/GameInstance/BlasterGameInstance.h"
 #include "Components/Button.h"
+#include "Components/TextBlock.h"
 
 
 void UMapSelectWidget::MenuSetup(int32 NumberOfPublicConnections, FString TypeOfMatch, FString LobbyPath)
@@ -70,6 +71,10 @@ bool UMapSelectWidget::Initialize()
 	{
 		JoinButton->OnClicked.AddDynamic(this, &ThisClass::JoinButtonClicked);
 	}
+	if (NameButton)
+	{
+		NameButton->OnClicked.AddDynamic(this, &ThisClass::GetNameClicked);
+	}
 
 	return true;
 }
@@ -83,7 +88,7 @@ void UMapSelectWidget::OnCreateSession(bool bWasSuccessful)
 {
 	if (bWasSuccessful)
 	{
-		auto FailedText = FString::Printf(TEXT("%s   success to create session!"), *PathToLobby);
+		auto FailedText = FString::Printf(TEXT("%s   success to create session! MatchType: %s, playerNum: %d"), *PathToLobby,*MatchType, NumPublicConnections);
 
 		if (GEngine)
 		{
@@ -195,6 +200,20 @@ void UMapSelectWidget::HostButtonClicked()
 	if (MultiplayerSessionsSubsystem)
 	{
 		MultiplayerSessionsSubsystem->CreateSession(NumPublicConnections, MatchType);
+	}
+}
+
+void UMapSelectWidget::GetNameClicked()
+{
+	if (MultiplayerSessionsSubsystem)
+	{
+		FPlayerMsgStruct PlayerMsg =  MultiplayerSessionsSubsystem->GetPlayerName(0);
+
+		if(NameText)
+		{
+			const FString PlayerMsgStr = FString::Printf(TEXT("player name: %s, index : %d"), *PlayerMsg.PlayerName, PlayerMsg.PlayerIndex);
+			NameText->SetText(FText::FromString(PlayerMsgStr));
+		}
 	}
 }
 

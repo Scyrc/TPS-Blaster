@@ -50,8 +50,17 @@ private:
 	UPROPERTY(meta = (BindWidget))
 	UButton* JoinButton;
 
+	UPROPERTY(meta = (BindWidget))
+	UButton* NameButton;
+	
+	UPROPERTY(meta = (BindWidget))
+	class UTextBlock* NameText;
+	
 	UFUNCTION()
 	void HostButtonClicked();
+
+	UFUNCTION()
+	void GetNameClicked();
 
 	UFUNCTION()
 	void JoinButtonClicked();

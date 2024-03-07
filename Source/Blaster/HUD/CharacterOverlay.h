@@ -34,7 +34,9 @@ public:
 
 	UPROPERTY(meta = (BindWidget))
 	UTextBlock* BlueTeamScore;
-	
+
+	UPROPERTY(meta = (BindWidget))
+	UTextBlock* RoundNum;
 	
 	UPROPERTY(meta = (BindWidget))
 	UTextBlock* DefeatsAmount;

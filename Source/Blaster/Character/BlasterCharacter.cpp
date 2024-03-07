@@ -6,6 +6,7 @@
 #include "NiagaraComponent.h"
 #include "NiagaraFunctionLibrary.h"
 #include "Blaster/Blaster.h"
+#include "Blaster/BlasterComponents/ActionComponent.h"
 #include "Blaster/BlasterComponents/BuffComponent.h"
 #include "Blaster/BlasterComponents/CombatComponent.h"
 #include "Blaster/BlasterComponents/LagCompensationComponent.h"
@@ -37,10 +38,22 @@ ABlasterCharacter::ABlasterCharacter()
 	CameraBoom->SetupAttachment(GetMesh());
 	CameraBoom->TargetArmLength = 600.0f;
 	CameraBoom->bUsePawnControlRotation = true;
+	TPSCamera = CreateDefaultSubobject<UCameraComponent>(TEXT("TPSCamera"));
+	TPSCamera->SetupAttachment(CameraBoom);
+	TPSCamera->bUsePawnControlRotation = true;
+	TPSCamera->SetActive(true);
 
-	FollowCamera = CreateDefaultSubobject<UCameraComponent>(TEXT("FollowCamera"));
-	FollowCamera->SetupAttachment(GetMesh(), FName("FPSCameraSocket"));
-	FollowCamera->bUsePawnControlRotation = true;
+	FPSCamera = CreateDefaultSubobject<UCameraComponent>(TEXT("FPSCamera"));
+	FPSCamera->SetupAttachment(GetMesh(), FName("FPSCameraSocket"));
+	FPSCamera->bUsePawnControlRotation = true;
+	FPSCamera->SetActive(false);
+
+	FPSMesh = CreateDefaultSubobject<USkeletalMeshComponent>(TEXT("FPSMesh"));
+	FPSMesh->SetOnlyOwnerSee(true);
+	FPSMesh->SetupAttachment(FPSCamera);
+	FPSMesh->bCastDynamicShadow = false;
+	FPSMesh->CastShadow = true;
+	
 	bUseControllerRotationYaw = true;
 	GetCharacterMovement()->bOrientRotationToMovement = true;
 
@@ -48,13 +61,15 @@ ABlasterCharacter::ABlasterCharacter()
 	OverheadWidget->SetupAttachment(RootComponent);
 
 	Combat = CreateDefaultSubobject<UCombatComponent>(TEXT("Combat"));
-	Combat->SetIsReplicated(true);
+	//Combat->SetIsReplicated(true);
 
 	Buff = CreateDefaultSubobject<UBuffComponent>(TEXT("BuffComponent"));
-	Buff->SetIsReplicated(true);
+	//Buff->SetIsReplicated(true);
 
 	LagCompensation = CreateDefaultSubobject<ULagCompensationComponent>(TEXT("LagCompensation"));
-	
+
+	ActionComp = CreateDefaultSubobject<UActionComponent>(TEXT("ActionComp"));
+	//ActionComp->SetIsReplicated(true);
 
 	GetCharacterMovement()->NavAgentProps.bCanCrouch = true;
 	GetCharacterMovement()->RotationRate = FRotator(0.f, 0.f, 850.f);
@@ -209,6 +224,26 @@ void ABlasterCharacter::SetTeamColor(ETeam Team)
 		DissolveMaterialInstance = BlueDissolveMaterialInstance;
 		break;
 	}
+}
+
+void ABlasterCharacter::SetPickedColor_Implementation(const FString& HeroName)
+{
+	if(GetMesh() == nullptr) return;
+	
+	if( HeroName == "Default")
+		GetMesh()->SetMaterial(0, DefaultMaterialInstance);
+		
+	else if( HeroName == "Red")
+		GetMesh()->SetMaterial(0, RedMaterialInstance);
+	
+	else if( HeroName == "Blue")
+		GetMesh()->SetMaterial(0, BlueMaterialInstance);
+	
+	else if( HeroName == "Purple")
+		GetMesh()->SetMaterial(0, PurpleMaterialInstance);
+	
+	else if( HeroName == "Gold")
+		GetMesh()->SetMaterial(0, GoldMaterialInstance);
 }
 
 void ABlasterCharacter::BeginPlay()
@@ -392,6 +427,7 @@ void ABlasterCharacter::OnPlayerStateInitialized()
 	BlasterPlayerState->AddToScore(0.f);
 	BlasterPlayerState->AddToDefeats(0);
 	SetTeamColor(BlasterPlayerState->GetTeam());
+	BlasterPlayerState->SetColor();
 	SetSpawnPoint();
 }
 
@@ -401,7 +437,7 @@ void ABlasterCharacter::HideCameraIfCharacterClose()
 		
 	if(IsFPS) return;
 
-	if((FollowCamera->GetComponentLocation() - GetActorLocation()).Size() < CameraThreshold)
+	if((TPSCamera->GetComponentLocation() - GetActorLocation()).Size() < CameraThreshold)
 	{
 		GetMesh()->SetVisibility(false);
 		if(Combat && Combat->EquippedWeapon && Combat->EquippedWeapon->GetWeaponMesh())
@@ -992,9 +1028,13 @@ void ABlasterCharacter::PlayReloadMontage()
 
 void ABlasterCharacter::PlayElimMontage()
 {
+	UE_LOG(LogTemp, Warning, TEXT("PlayElimMontage Called"));
+
 	UAnimInstance* AnimInstance = GetMesh()->GetAnimInstance();
 	if(AnimInstance && ElimMontage)
 	{
+		UE_LOG(LogTemp, Warning, TEXT("going to play Montage_Play"));
+
 		AnimInstance->Montage_Play(ElimMontage);
 	}
 }
@@ -1217,6 +1257,47 @@ FVector ABlasterCharacter::GetHitTarget() const
 	return Combat->HitTarget;
 }
 
+void ABlasterCharacter::SkillOneButtonPress()
+{
+	if(SkillsName.Num() > 0) ActionComp->StartActionByName(this, SkillsName[0]);
+}
+
+void ABlasterCharacter::SkillTwoButtonPress()
+{
+	if(SkillsName.Num() > 1) ActionComp->StartActionByName(this, SkillsName[1]);
+}
+
+void ABlasterCharacter::SkillThreeButtonPress()
+{
+	if(SkillsName.Num() > 2) ActionComp->StartActionByName(this, SkillsName[2]);
+}
+
+void ABlasterCharacter::SkillFourButtonPress()
+{
+	if(SkillsName.Num() > 3) ActionComp->StartActionByName(this, SkillsName[3]);
+}
+
+void ABlasterCharacter::SwitchView()
+{
+	if(TPSCamera->IsActive())
+	{
+		FPSCamera->SetActive(true);
+		GetMesh()->SetOwnerNoSee(true);
+		TPSCamera->SetActive(false);
+	}
+	else if(FPSCamera->IsActive())
+	{
+		TPSCamera->SetActive(true);
+		GetMesh()->SetOwnerNoSee(false);
+		FPSCamera->SetActive(false);
+	}
+}
+
+void ABlasterCharacter::BuyItems()
+{
+	//BlasterPlayerState = BlasterPlayerState == nullptr ? Cast<ABlasterPlayerState>(GetPlayerState()) : BlasterPlayerState;
+	
+}
 
 void ABlasterCharacter::SetupPlayerInputComponent(UInputComponent* PlayerInputComponent)
 {
@@ -1245,6 +1326,16 @@ void ABlasterCharacter::SetupPlayerInputComponent(UInputComponent* PlayerInputCo
 	PlayerInputComponent->BindAction("SwitchBomb", IE_Pressed, this, &ABlasterCharacter::SwitchBombButtonPress);
 	PlayerInputComponent->BindAction("DropWeapon", IE_Pressed, this, &ABlasterCharacter::DropWeaponButtonPress);
 
+	
+	PlayerInputComponent->BindAction("SkillOne", IE_Pressed, this, &ABlasterCharacter::SkillOneButtonPress);
+	PlayerInputComponent->BindAction("SkillTwo", IE_Pressed, this, &ABlasterCharacter::SkillTwoButtonPress);
+	PlayerInputComponent->BindAction("SkillThree", IE_Pressed, this, &ABlasterCharacter::SkillThreeButtonPress);
+	PlayerInputComponent->BindAction("SkillFour", IE_Pressed, this, &ABlasterCharacter::SkillFourButtonPress);
+
+	PlayerInputComponent->BindAction("SwitchView", IE_Pressed, this, &ABlasterCharacter::SwitchView);
+
+	PlayerInputComponent->BindAction("BuyItems", IE_Pressed, this, &ABlasterCharacter::SwitchView);
+	
 }
 
 

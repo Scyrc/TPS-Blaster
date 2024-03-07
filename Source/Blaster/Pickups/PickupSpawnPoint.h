@@ -28,6 +28,12 @@ protected:
 
 	UPROPERTY()
 	APickup* SpawnedPickup;
+
+	//蓝图可读
+	UPROPERTY(BlueprintReadOnly)
+	int32 BlueprintReadOnlyValue;
+	
+	
 	
 private:
 

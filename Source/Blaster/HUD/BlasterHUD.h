@@ -36,6 +36,13 @@ public:
 	class UCharacterOverlay* CharacterOverlay;
 	void AddCharacterOverlay();
 
+	UPROPERTY(EditAnywhere, Category = "Player HUDClass")
+	TSubclassOf<UUserWidget> HeroSelectWidgetClass;
+	UPROPERTY()
+	class UHeroSelectWidget* HeroSelectWidget;
+	void AddHeroSelectWidget();
+	void RemoveHeroSelectWidget();
+
 	UPROPERTY(EditAnywhere, Category = "Announcements")
 	TSubclassOf<UUserWidget> AnnouncementClass;
 

@@ -10,6 +10,8 @@ UBuffComponent::UBuffComponent()
 {
 	
 	PrimaryComponentTick.bCanEverTick = true;
+	//SetIsReplicated(true);
+	SetIsReplicatedByDefault(true);
 
 }
 

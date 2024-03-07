@@ -33,8 +33,10 @@ public:
 	void SetHUDGrenades(int32 Grenades);
 	void HideTeamScore();
 	void InitTeamScore();
+	void InitRoundNum();
 	void SetRedTeamScore(int32 RedScore);
 	void SetBlueTeamScore(int32 BlueScore);
+	//void SetHUDHeroPickCountdown(float CountdownTime);
 
 	virtual void OnPossess(APawn* InPawn) override;
 	virtual float GetServerTime();
@@ -70,15 +72,19 @@ protected:
 
 	float TimeSyncRunningTime =0.f;
 	void CheckTimeSync(float DeltaTime);
-
+	
 	void HandleMatchHasStarted(bool bTeamsMatch =false);
+	void HandleWarmTime(bool bTeamsMatch =false);
+	void HandleWaiting();
+
 	void HandleMatchCooldown();
+	void HandleMatchOver();
 
 	UFUNCTION(Server, Reliable)
 	void ServerCheckMatchState();
 
 	UFUNCTION(Client, Reliable)
-	void ClientJoinMidgame(FName StateOfMacth, float Match, float Warmup, float LevelStarting, float Cooldown);
+	void ClientJoinMidgame(FName StateOfMacth, float Match, float Warmup, float LevelStarting, float Cooldown, int32 Round, float Loading, float SummaryTime);
 
 	void HighPingWarning(); 
 	void StopHighPingWarning();
@@ -94,7 +100,9 @@ protected:
 	void OnRep_bShowTeamScores();
 
 	FString GetInfoText(const TArray<ABlasterPlayerState*>& TopPlayers);
-	FString GetTeamInfoText(class ABlasterGameState* BlasterGameState);
+	FString GetTeamInfoText();
+
+	void fixScoreError();
 
 private:
 	/*
@@ -112,12 +120,22 @@ private:
 	class ABlasterGameMode* BlasterGameMode;
 	
 	UPROPERTY()
+	class ABlasterGameState* BlasterGameState;
+	
+	UPROPERTY()
 	class ABlasterHUD* BlasterHUD;
+
+	//UPROPERTY(Replicated)
+	float LoadingTime = 0.f;
+
+	float GameSummaryTime = 0.f;
+
 	float LevelStartingTime =0.f;
 	float MatchTime = 0.f;
 	float WarmupTime = 0.f;
 	float CooldownTime = 0.f;
-
+	//float HeroPickTime = 0.f;
+	int32 RoundNum = 0;
 	uint32 CountdownInt = 0;
 
 	UPROPERTY(ReplicatedUsing=OnRep_MatchState)
@@ -159,4 +177,10 @@ private:
 	void ServerReportPingStatus(bool bHighPing);
 	UPROPERTY(EditAnywhere)
 	float HighPingThreshold = 50.f;
+
+	/*UFUNCTION(Server, Reliable)
+	void ServerGetMatchTypeStartingTime();
+
+	UFUNCTION(Client, Reliable)
+	void ClientReceiveMatchTypeStartingTime(float MatchTypeStartingTime);*/
 };

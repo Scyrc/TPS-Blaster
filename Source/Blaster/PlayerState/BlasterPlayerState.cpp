@@ -14,6 +14,12 @@ void ABlasterPlayerState::GetLifetimeReplicatedProps(TArray<FLifetimeProperty>& 
 
 	DOREPLIFETIME(ABlasterPlayerState, Defeats);
 	DOREPLIFETIME(ABlasterPlayerState, Team);
+	DOREPLIFETIME(ABlasterPlayerState, Credits);
+	DOREPLIFETIME(ABlasterPlayerState, PlayerTeamIndex);
+	DOREPLIFETIME(ABlasterPlayerState, SteamPlayerName);
+	DOREPLIFETIME(ABlasterPlayerState, SteamPlayerId);
+	DOREPLIFETIME(ABlasterPlayerState, HeroName);
+
 }
 
 // run on server
@@ -61,6 +67,23 @@ void ABlasterPlayerState::AddToDefeats(int32 DefeatsAmount)
 	}
 }
 
+void ABlasterPlayerState::CopyProperties(APlayerState* PlayerState)
+{
+	Super::CopyProperties(PlayerState);
+
+	ABlasterPlayerState* NewPlayerState = Cast<ABlasterPlayerState>(PlayerState);
+	if(NewPlayerState)
+	{
+		NewPlayerState->SteamPlayerId = SteamPlayerId;
+		NewPlayerState->SteamPlayerName = SteamPlayerName;
+		NewPlayerState->Team = Team;
+		NewPlayerState->PlayerTeamIndex = PlayerTeamIndex;
+		NewPlayerState->Credits = Credits;
+		NewPlayerState->Defeats = Defeats;
+		NewPlayerState->HeroName = HeroName;
+	}
+}
+
 void ABlasterPlayerState::OnRep_Team()
 {
 	ABlasterCharacter * BlasterCharacter = Cast<ABlasterCharacter>(GetPawn());
@@ -80,6 +103,17 @@ void ABlasterPlayerState::SetTeam(ETeam TeamToSet)
 	}
 }
 
+
+
+void ABlasterPlayerState::SetColor()
+{
+	ABlasterCharacter * BlasterCharacter = Cast<ABlasterCharacter>(GetPawn());
+	if(BlasterCharacter)
+	{
+		BlasterCharacter->SetPickedColor(HeroName);
+	}
+}
+
 void ABlasterPlayerState::OnRep_Defeats()
 {
 	Character = Character == nullptr ? Cast<ABlasterCharacter>(GetPawn()) : Character;
@@ -91,4 +125,9 @@ void ABlasterPlayerState::OnRep_Defeats()
 			Controller->SetHUDDefeats(Defeats);
 		}
 	}
+}
+
+void ABlasterPlayerState::OnRep_Credits()
+{
+	
 }

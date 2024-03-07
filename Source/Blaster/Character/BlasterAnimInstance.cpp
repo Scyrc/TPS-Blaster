@@ -13,6 +13,8 @@ void UBlasterAnimInstance::NativeInitializeAnimation()
 	Super::NativeInitializeAnimation();
 
 	BlasterCharcter = Cast<ABlasterCharacter>(TryGetPawnOwner());
+	//BlasterCharcter = Cast<ABlasterCharacter>();
+
 }
 
 void UBlasterAnimInstance::NativeUpdateAnimation(float DeltaTime)
@@ -72,7 +74,7 @@ void UBlasterAnimInstance::NativeUpdateAnimation(float DeltaTime)
 		LeftHandTransform.SetLocation(OutPosition);
 		LeftHandTransform.SetRotation(FQuat(OutRotation));
 
-		if(BlasterCharcter->IsLocallyControlled())
+		if(BlasterCharcter->IsLocallyControlled()) 
 		{
 			bLocallyControlled = true;
 			FTransform RightHandTransform = EquippedWeapon->GetWeaponMesh()->GetSocketTransform(FName("Hand_R"), ERelativeTransformSpace::RTS_World);
@@ -89,7 +91,7 @@ void UBlasterAnimInstance::NativeUpdateAnimation(float DeltaTime)
 	}
 
 	bUseFABRIK = BlasterCharcter->GetCombatState() == ECombatState::ECS_Unoccupied;
-	bool bFABRIKOverride = BlasterCharcter->IsLocallyControlled() &&
+	bool bFABRIKOverride = BlasterCharcter->IsLocallyControlled() &&  
 		BlasterCharcter->GetCombatState() != ECombatState::ECS_SwappingWeapons&&
 		BlasterCharcter->bFinishedSwapping;
 	if(bFABRIKOverride)

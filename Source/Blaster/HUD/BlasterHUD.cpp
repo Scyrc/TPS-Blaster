@@ -7,6 +7,7 @@
 #include "GameFramework/PlayerController.h"
 #include "CharacterOverlay.h"
 #include "ElimAnnouncement.h"
+#include "HeroSelectWidget.h"
 #include "Blueprint/WidgetLayoutLibrary.h"
 #include "Components/CanvasPanelSlot.h"
 #include "Components/HorizontalBox.h"
@@ -15,7 +16,6 @@
 void ABlasterHUD::BeginPlay()
 {
 	Super::BeginPlay();
-	
 }
 
 void ABlasterHUD::AddCharacterOverlay()
@@ -32,9 +32,37 @@ void ABlasterHUD::AddCharacterOverlay()
 		CharacterOverlay = CreateWidget<UCharacterOverlay>(GetWorld(), CharacterOverlayClass);
 		CharacterOverlay->AddToViewport();
 	}
-
-	
 }
+
+void ABlasterHUD::AddHeroSelectWidget()
+{
+	UE_LOG(LogTemp, Warning, TEXT("AddHeroSelectWidget"));
+
+	const APlayerController* PlayerController = GetOwningPlayerController();
+
+	if(PlayerController && HeroSelectWidgetClass)
+	{
+		if(HeroSelectWidget)
+		{
+			HeroSelectWidget->RemoveFromParent();
+		}
+
+		HeroSelectWidget = CreateWidget<UHeroSelectWidget>(GetWorld(), HeroSelectWidgetClass);
+		if(HeroSelectWidget)
+		{
+			HeroSelectWidget->AddToViewport();
+		}
+	}
+}
+
+void ABlasterHUD::RemoveHeroSelectWidget()
+{
+	if(HeroSelectWidget)
+	{
+		HeroSelectWidget->RemoveFromParent();
+	}
+}
+
 void ABlasterHUD::AddAnnouncement()
 {
 	OwningPlayerController = OwningPlayerController == nullptr ? GetOwningPlayerController() : OwningPlayerController;
@@ -42,6 +70,10 @@ void ABlasterHUD::AddAnnouncement()
 
 	if(OwningPlayerController && AnnouncementClass)
 	{
+		if(Announcement)
+		{
+			Announcement->RemoveFromParent();
+		}
 		Announcement = CreateWidget<UAnnouncement>(GetWorld(), AnnouncementClass);
 		Announcement->AddToViewport();
 	}

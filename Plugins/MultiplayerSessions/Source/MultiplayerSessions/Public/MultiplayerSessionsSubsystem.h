@@ -3,6 +3,7 @@
 #pragma once
 
 #include "CoreMinimal.h"
+#include "OnlineSubsystem.h"
 #include "Subsystems/GameInstanceSubsystem.h"
 #include "Interfaces/OnlineSessionInterface.h"
 
@@ -20,6 +21,29 @@ DECLARE_DYNAMIC_MULTICAST_DELEGATE_OneParam(FMultiplayerOnStartSessionComplete, 
 /**
  * 
  */
+USTRUCT()
+struct FPlayerMsgStruct
+{
+	GENERATED_BODY()
+	
+	FString PlayerId;
+	FString PlayerName;
+	int32 PlayerIndex;
+	FPlayerMsgStruct()
+	{
+		PlayerId = "";
+		PlayerName = "";
+		PlayerIndex = -999;
+	}
+	FPlayerMsgStruct(FString Id, FString Name,int32 Index)
+	{
+		PlayerId = Id;
+		PlayerName = Name;
+		PlayerIndex = Index;
+	}
+	
+};
+
 UCLASS()
 class MULTIPLAYERSESSIONS_API UMultiplayerSessionsSubsystem : public UGameInstanceSubsystem
 {
@@ -36,6 +60,7 @@ public:
 	void DestroySession();
 	void StartSession();
 
+	FPlayerMsgStruct GetPlayerName(int32 LocalUserNum) const;
 	//
 	// Our own custom delegates for the Menu class to bind callbacks to
 	//
@@ -61,6 +86,8 @@ protected:
 
 private:
 	IOnlineSessionPtr SessionInterface;
+	IOnlineIdentityPtr IdentityInterface;
+
 	TSharedPtr<FOnlineSessionSettings> LastSessionSettings;
 	TSharedPtr<FOnlineSessionSearch> LastSessionSearch;
 
